@@ -771,7 +771,9 @@ const REPLY = {
 if (!ST.rel) ST.rel = {};
 const REL = id => (ST.rel[id] = ST.rel[id] || { lastIntent: "", lastText: "", reps: {}, mad: 0 });
 // 호감도 = 대화창에서 내가 보낸 메시지 수 (1통에 +3, 시작 5). 욕하면 깎인 만큼 따로 기억한다
-const meCount = id => ((CHAT[id] && CHAT[id].log) || []).filter(m => m[0] === "me").length;
+// ㅇㅇ·ㄱㄴ·ㅋㅋ·네 같은 짧은 말은 세지 않는다
+const counts = t => { const n = String(t).replace(/[\s.!?~,…]/g, ""); return n.length > 1 && !/^[ㄱ-ㅎㅏ-ㅣ]+$/.test(n) && !SHORT_RE.test(n); };
+const meCount = id => ((CHAT[id] && CHAT[id].log) || []).filter(m => m[0] === "me" && counts(m[1])).length;
 const aff = id => Math.max(0, Math.min(100, 5 + meCount(id) * 3 - (REL(id).pen || 0)));
 const tier = id => { const a = aff(id); return a >= 85 ? "bond" : a >= 60 ? "close" : a >= 30 ? "warm" : "cold"; };
 const TIER_KO = { cold: "경계", warm: "익숙함", close: "가까움", bond: "각별함" };
