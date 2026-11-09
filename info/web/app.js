@@ -359,6 +359,8 @@ function renderDevices() {
         <div class="nm"><b>${c.ko}</b><span>${c.code}</span></div>
         <div class="loc">📍 ${c.loc}</div>
         <div class="mini">TH°<span class="b"><i style="width:${c.th ?? 0}%"></i></span><em data-th="${id}">${c.th == null ? "??" : c.th + "%"}</em></div>
+        <div class="mini aff t-${tier(id)}">호감<span class="b"><i style="width:${aff(id)}%"></i></span><em>${aff(id)}</em></div>
+        <div class="aff-t t-${tier(id)}">${TIER_KO[tier(id)]} · 대화 ${meCount(id)}회</div>
         <div class="memo">${c.memo}</div>
       </div>
     </div>`).join("");
@@ -369,6 +371,7 @@ function renderDevices() {
         <div class="nm"><b>██████</b><span>ID 0001</span></div>
         <div class="loc">📍 ██████████</div>
         <div class="mini">TH°<span class="b"><i style="width:0"></i></span><em>—</em></div>
+        <div class="mini aff">호감<span class="b"><i style="width:0"></i></span><em>—</em></div>
         <div class="memo hd">등급 분류 밖. 이 기록은 조회할 수 없습니다.</div>
       </div>
     </div>`;
@@ -696,9 +699,9 @@ function drawChoices(id) {
   if (s.done || !n.ch) { box.innerHTML = `<span class="end">— 상대가 디바이스를 내려놓았습니다 —</span>`; return; }
   box.innerHTML = n.ch.map(([t], i) => `<button data-c="${i}">${t}</button>`).join("");
   $$("#chatChoices [data-c]").forEach(b => b.onclick = () => {
-    const [t, next] = n.ch[+b.dataset.c];
+    const [t, next] = n.ch[+b.dataset.c], before = tier(id);
     s.log.push(["me", t]); bubble("me", t); save();
-    play(id, next);
+    play(id, next).then(() => { if (cur === id) $("#chatState").innerHTML = `<span class="live"><i></i>${CH[id].st}</span>${relLabel(id)}`; checkTierUp(id, before); renderDevices(); });
   });
 }
 // 다른 화면에서 일어난 일, 또는 시간이 지나 먼저 오는 메시지
@@ -715,12 +718,12 @@ function ambient(silent, force) {
   if (NOW() >= A.reset) { A.seen = {}; A.reset = NOW() + AMB_RESET; }
   if (!force && NOW() - A.last < AMB_GAP) return false;
   const ids = (hasFx("case") ? ORDER.filter(x => x !== "jin") : ORDER).filter(id =>
-    (force || NOW() - (A.each[id] || 0) >= AMB_GAP_EACH) && AMB[id].some((_, i) => !(A.seen[id] || []).includes(i)));
+    (force || NOW() - (A.each[id] || 0) >= AMB_GAP_EACH) && ambPool(id).some((_, i) => !(A.seen[id] || []).includes(i)));
   if (!ids.length) return false;
-  const id = ids[rand(0, ids.length - 1)], fresh = AMB[id].map((_, i) => i).filter(i => !(A.seen[id] || []).includes(i));
+  const id = ids[rand(0, ids.length - 1)], fresh = ambPool(id).map((_, i) => i).filter(i => !(A.seen[id] || []).includes(i));
   const i = fresh[rand(0, fresh.length - 1)];
   (A.seen[id] = A.seen[id] || []).push(i); A.last = NOW(); A.each[id] = NOW(); save();
-  pushMsg(id, AMB[id][i], silent);
+  pushMsg(id, ambPool(id)[i], silent);
   return true;
 }
 
@@ -766,13 +769,50 @@ const REPLY = {
    더 자연스럽게: 상황 · 기억 · 호감도 · 받아치기 · 말투 · 반복 · 길이와 속도
    ------------------------------------------------------------------- */
 if (!ST.rel) ST.rel = {};
-const REL = id => (ST.rel[id] = ST.rel[id] || { aff: 10, lastIntent: "", lastText: "", reps: {}, gain: [], mad: 0 });
-const tier = id => { const a = REL(id).aff; return a >= 70 ? "close" : a >= 30 ? "warm" : "cold"; };
-const TIER_KO = { cold: "경계", warm: "익숙함", close: "가까움" };
-function addAff(id, n) {
-  const r = REL(id);
-  if (n > 0) { r.gain = r.gain.filter(t => NOW() - t < 600000); if (r.gain.length >= 6) return; r.gain.push(NOW()); } // 10분에 최대 6번만 오름
-  r.aff = Math.max(0, Math.min(100, r.aff + n)); save();
+const REL = id => (ST.rel[id] = ST.rel[id] || { lastIntent: "", lastText: "", reps: {}, mad: 0 });
+// 호감도 = 대화창에서 내가 보낸 메시지 수 (1통에 +3, 시작 5). 욕하면 깎인 만큼 따로 기억한다
+const meCount = id => ((CHAT[id] && CHAT[id].log) || []).filter(m => m[0] === "me").length;
+const aff = id => Math.max(0, Math.min(100, 5 + meCount(id) * 3 - (REL(id).pen || 0)));
+const tier = id => { const a = aff(id); return a >= 85 ? "bond" : a >= 60 ? "close" : a >= 30 ? "warm" : "cold"; };
+const TIER_KO = { cold: "경계", warm: "익숙함", close: "가까움", bond: "각별함" };
+const TIER_N = { cold: 0, warm: 1, close: 2, bond: 3 };
+function addAff(id, n) { if (n < 0) { const r = REL(id); r.pen = (r.pen || 0) - n; save(); } }
+// 단계가 처음 오를 때 한 번 오는 메시지
+const MILESTONE = {
+  jin: { warm: ["……최근 문의 빈도가 높습니다.", "불만은 아닙니다. 기록상 그렇다는 겁니다."], close: ["업무 외 채널 하나 열어 뒀습니다.", "……여긴 기록 안 남아. 편하게 해."], bond: ["차 내려 둘게. 레지던스로 와.", "……이상입니다."] },
+  ruan: { warm: ["너 말 많다.", "……싫다는 건 아니고."], close: ["네 번호, 맨 위에 올려놨다.", "말하지 마. 아무한테도."], bond: ["어디 가면 말하고 가.", "……없으면 찾게 되잖아. 그게 다야."] },
+  jenis: { warm: ["대화 로그가 쌓이네요.", "음, 지우진 않겠습니다."], close: ["오늘 회의 중에 당신 메시지부터 확인했어요.", "……비밀입니다."], bond: ["손편지 써 본 적 있으세요?", "……아니에요. 그냥 물어본 거예요."] },
+  rainer: { warm: ["음… 이제 당신 발소리 구분돼요."], close: ["가게 구석 자리, 당신 자리로 비워 둘게요."], bond: ["뉴올리언스에 작은 집이 있어요.", "……언젠가 보여 줄게요. 아무한테나 안 보여 주는 데예요."] },
+  anzi: { warm: ["흠. 너 기사감보다 재밌어."], close: ["커피 하나 더 시켜 놨어. 와서 마셔.", "……식기 전에."], bond: ["오늘은 아무것도 안 캐물을게.", "그냥 얘기해. 듣고 있을게."] },
+  minos: { warm: ["……너 연락 오면 진동 바꿔 놨다.", "헷갈려서. 그게 다야."], close: ["오늘 현장 끝나고 들를게. 필요한 거 있냐."], bond: ["등 맡길 사람 있냐고 누가 물으면.", "……너 이름 댈 거다."] },
+  maquia: { warm: ["……예측이 또 빗나갔다.", "네 쪽 문제다."], close: ["질문 하나만 하지.", "……아니. 다음에."], bond: ["목에 흉터가 있다.", "……봤다면, 그걸로 됐다."] },
+};
+// 단계가 오르면 먼저 오는 메시지가 늘어난다
+const AMB_T = {
+  jin: { warm: [["오늘 배정, 위험도 낮은 걸로 골라 뒀습니다.", "……특별 대우 아닙니다."], ["갈증도 기록, 지난주보다 안정적입니다."]],
+    close: [["디스패치실 커피 머신 고쳤어.", "……와서 마셔도 돼."], ["오늘 서류 다 끝났어. 드물게."]], bond: [["레지던스 비밀번호 바꿨어.", "새 거 보낼게. ……너한테만."], ["오늘은 그냥, 안부."]] },
+  ruan: { warm: [["오늘 스트립 남쪽 조용해. 갈 거면 지금 가."], ["……밥 먹었냐. 아니, 피 말고."]],
+    close: [["반지 하나 잃어버렸다.", "……네 근처에 떨어졌을 거 같은데."], ["레이너가 너 얘기 하더라. 신경 쓰여서."]], bond: [["지금 어디야.", "……그냥. 알고 싶어서."], ["오늘 꿈 꿨다. 말 안 해."]] },
+  jenis: { warm: [["오늘 수치, 처음으로 예측대로 나왔어요.", "……조금 아쉽네요."], ["이사회 중에 하품 참느라 힘들었어요."]],
+    close: [["뉴욕에서 작은 선물 샀어요.", "돌아가면 줄게요."], ["오늘 밤은 회사 일 안 해요. 그냥 대화해요."]], bond: [["편지지 하나 샀어요.", "……쓸 사람이 생겨서요."], ["보고 싶네요. 데이터상으로도요."]] },
+  rainer: { warm: [["오늘 마감 커피 한 잔 남았어요.", "당신 거로 할게요."], ["손님이 피아노 신청했는데, 당신 오면 치려고 미뤘어요."]],
+    close: [["오늘은 가게 일찍 닫을까 봐요.", "……이유는 안 물어보죠?"], ["창고 정리하다 오래된 악보 찾았어요. 같이 봐요."]], bond: [["뉴올리언스는 지금 비 온대요.", "언젠가 같이 가요."], ["음… 그냥 이름 한번 불러 보고 싶어서요."]] },
+  anzi: { warm: [["오늘 편집 회의 중에 너 생각나서 웃었어."], ["흠. 네 근무 앞치마, 1면 사진으로 쓰고 싶은데."]],
+    close: [["오늘 1면 고민 중. 네 의견 들을래."], ["……어제 보낸 커피 맛있었어?"]], bond: [["오늘은 기사 안 써.", "하루 종일 너 구경할래."], ["흠. 이 채널 너만 알아. 다른 데 말하지 마."]] },
+  minos: { warm: [["오늘 현장 끝. 별일 없었다."], ["……밥 먹었냐. 이번엔 진짜로 묻는 거다."]],
+    close: [["순찰 경로 네 거처 쪽으로 바꿨다.", "……우연이다."], ["오늘 할머니 댁 다녀왔다.", "……그냥 말하고 싶었다."]], bond: [["다음 비번 날, 비워 둬."], ["등 뒤가 조용하다. 너 있을 때만."]] },
+  maquia: { warm: [["……네 행동, 세 번째 예측도 틀렸다."], ["흠. 오늘은 질문 없나."]],
+    close: [["외곽 공원 숲길, 밤엔 조용하다.", "……그냥 그렇다고."], ["체스 둘 줄 아나."]], bond: [["……네가 연락 안 하면, 신경이 쓰인다."], ["오늘 밤, 시간 비워 둬라."]] },
+};
+const ambPool = id => { const n = TIER_N[tier(id)], t = AMB_T[id] || {}; return [...AMB[id], ...(n >= 1 ? t.warm || [] : []), ...(n >= 2 ? t.close || [] : []), ...(n >= 3 ? t.bond || [] : [])]; };
+function checkTierUp(id, before) {
+  const now = tier(id), r = REL(id);
+  if (TIER_N[now] <= TIER_N[before] || (r.ms || []).includes(now)) return;
+  (r.ms = r.ms || []).push(now); save();
+  toast(`♥ ${CH[id].ko} · 관계 ${TIER_KO[now]}`);
+  renderDevices();
+  const m = MILESTONE[id] && MILESTONE[id][now];
+  if (m) setTimeout(() => pushMsg(id, m, true), rand(4000, 8000));
 }
 const lvHour = () => +new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }) % 24;
 const pick = a => a[rand(0, a.length - 1)];
@@ -780,21 +820,48 @@ const pick = a => a[rand(0, a.length - 1)];
 // 호감도가 오르면 같은 말에도 다르게 답한다
 const TIERED = {
   like: {
-    jin: { warm: ["……근무 시간 외에 말씀하세요.", "기록에서 지워 두겠습니다. 이번만."], close: ["……알아. 여기선 그만해.", "업무 채널입니다. ……나중에 직접 말해."] },
-    ruan: { warm: ["……하.", "그런 말 쉽게 하지 마. 믿는다."], close: ["알아.", "……나도 그래. 됐지? 이제 자."] },
-    jenis: { warm: ["……후. 계산에 없던 말이네요."], close: ["저도요. 예측은 못 했지만."] },
-    rainer: { warm: ["음… 그 말, 기억해 둘게요."], close: ["알아요. 그래서 놓아줄 생각 없어요."] },
-    anzi: { warm: ["흠. 이번엔 장난으로 안 들리네."], close: ["……알아. 그러니까 장난 그만 치게 만들지 마."] },
-    minos: { warm: ["……그런 말은 맨정신일 때 해."], close: ["알아. ……나도."] },
-    maquia: { warm: ["……기록해 두지."], close: ["……알고 있다."] },
+    jin: { warm: ["……근무 시간 외에 말씀하세요.", "기록에서 지워 두겠습니다. 이번만."], close: ["……알아. 여기선 그만해.", "업무 채널입니다. ……나중에 직접 말해."], bond: ["……나도. 근무 끝나고 다시 말해."] },
+    ruan: { warm: ["……하.", "그런 말 쉽게 하지 마. 믿는다."], close: ["알아.", "……나도 그래. 됐지? 이제 자."], bond: ["……알아. 몇 번을 말해.", "나도. 됐냐."] },
+    jenis: { warm: ["……후. 계산에 없던 말이네요."], close: ["저도요. 예측은 못 했지만."], bond: ["알아요. 저도 숨길 생각 없어요."] },
+    rainer: { warm: ["음… 그 말, 기억해 둘게요."], close: ["알아요. 그래서 놓아줄 생각 없어요."], bond: ["음… 그 말 들으려고 기다렸어요."] },
+    anzi: { warm: ["흠. 이번엔 장난으로 안 들리네."], close: ["……알아. 그러니까 장난 그만 치게 만들지 마."], bond: ["……이번엔 기사 안 써. 나만 알 거야."] },
+    minos: { warm: ["……그런 말은 맨정신일 때 해."], close: ["알아. ……나도."], bond: ["……알아. 그러니까 다치지 마."] },
+    maquia: { warm: ["……기록해 두지."], close: ["……알고 있다."], bond: ["……기억해 두지. 오래."] },
   },
   thanks: {
-    jin: { close: ["……천만에."] }, ruan: { warm: ["됐어. ……다음에도 불러."], close: ["됐다고. 다음에도 불러."] }, jenis: { close: ["당신이니까요."] },
-    rainer: { close: ["음, 갚는 건 천천히 해요. 오래 걸려도 돼."] }, anzi: { close: ["……그런 말 들으면 기사 못 쓰잖아."] }, minos: { close: ["……됐다. 다치지만 마."] }, maquia: { close: ["……그래."] },
+    jin: { close: ["……천만에."], bond: ["……당연한 거야."] }, ruan: { warm: ["됐어. ……다음에도 불러."], close: ["됐다고. 다음에도 불러."], bond: ["……됐다니까."] }, jenis: { close: ["당신이니까요."], bond: ["고마운 건 저예요."] },
+    rainer: { close: ["음, 그 말은 오래 기억할게요."], bond: ["그냥 있어 줘요. 그거면 돼요."] }, anzi: { close: ["……그런 말 들으면 기사 못 쓰잖아."], bond: ["……그 말 좋아. 또 해."] }, minos: { close: ["……됐다. 다치지만 마."], bond: ["됐다. ……근데 듣긴 좋네."] }, maquia: { close: ["……그래."], bond: ["……그래. 기억해 두지."] },
   },
   greet: {
-    jin: { close: ["……왔어?"] }, ruan: { warm: ["어. 왔냐."], close: ["왔냐. 늦었네."] }, jenis: { close: ["연락 기다렸어요."] }, rainer: { close: ["음, 보고 싶었어요."] },
-    anzi: { close: ["기다렸어. 아니, 진짜로."] }, minos: { close: ["어. 별일 없지."] }, maquia: { close: ["……왔군."] },
+    jin: { close: ["……왔어?"], bond: ["……왔네. 오늘은 어땠어?"] }, ruan: { warm: ["어. 왔냐."], close: ["왔냐. 늦었네."], bond: ["왔냐. 기다린 건 아니고."] }, jenis: { close: ["연락 기다렸어요."], bond: ["왔네요. 오늘 수치부터 같이 봐요."] }, rainer: { close: ["음, 보고 싶었어요."], bond: ["어서 와요. 자리 비워 놨어요."] },
+    anzi: { close: ["기다렸어. 아니, 진짜로."], bond: ["왔다. 오늘은 내가 먼저 얘기할래."] }, minos: { close: ["어. 별일 없지."], bond: ["어. ……왔으면 됐다."] }, maquia: { close: ["……왔군."], bond: ["……늦었군."] },
+  },
+  bye: {
+    jin: { warm: ["내일 공지 확인하고 주무십시오."], close: ["……잘 자. 디바이스 무음으로 해."], bond: ["잘 자. 아침에 먼저 연락할게."] },
+    ruan: { warm: ["어. 자."], close: ["문 잠갔냐. 확인하고 자."], bond: ["자. 내일 내가 깨운다."] },
+    jenis: { warm: ["좋은 밤 되세요. 수치 기록은 내일."], close: ["푹 자요. 아침 회의 전에 연락할게요."], bond: ["잘 자요. ……오늘 대화, 저장해 둘게요."] },
+    rainer: { warm: ["잘 자요."], close: ["잘 자요. 문 닫을 때 불 끄고."], bond: ["잘 자요. 내일도 와요. 꼭."] },
+    anzi: { warm: ["흠, 벌써?"], close: ["잘 자. 내일 재밌는 거 들고 올게."], bond: ["……좀 더 있다 가면 안 돼? 아냐. 잘 자."] },
+    minos: { warm: ["자라."], close: ["문 잠그고 자라. 순찰 그쪽으로 돈다."], bond: ["자. ……무슨 일 있으면 바로 불러. 몇 시든."] },
+    maquia: { close: ["……쉬어라."], bond: ["……잘 자라."] },
+  },
+  help: {
+    jin: { close: ["위치만 보내세요. 제가 직접 갑니다."], bond: ["지금 갈게. 연락 끊지 마."] },
+    ruan: { close: ["말하지 말고 위치. 가는 중."], bond: ["숨 쉬어. 내가 간다. 아무 데도 가지 마."] },
+    jenis: { close: ["어디예요. 처치 키트 들고 바로 갑니다."], bond: ["거기 있어요. ……이번엔 회의 다 버리고 갈게요."] },
+    rainer: { close: ["어디예요. 가게 닫고 갈게요."], bond: ["움직이지 마요. ……누가 건드렸는지만 말해요."] },
+    anzi: { close: ["……어디. 장난 아니고."], bond: ["위치 찍어. 루안보다 먼저 갈게."] },
+    minos: { close: ["위치. 사이렌 켜고 간다."], bond: ["말하지 마, 위치 잡았다. 버텨."] },
+    maquia: { close: ["어디."], bond: ["……움직이지 마라. 지금 간다."] },
+  },
+  fallback: {
+    jin: { warm: ["……그렇군요.", "말씀 계속하세요. 듣고 있습니다."], close: ["응. 계속해.", "……듣고 있어. 서류 보면서지만."], bond: ["응. 다 듣고 있어.", "……그 얘기, 차 마시면서 마저 해."] },
+    ruan: { warm: ["그래서.", "……듣고 있어."], close: ["응. 그래서?", "……계속해. 안 끊어."], bond: ["응.", "말해. 다 들을게."] },
+    jenis: { warm: ["음, 흥미롭네요.", "계속하세요."], close: ["그 얘기 더 해 줘요.", "음, 메모 안 하고 그냥 들을게요."], bond: ["좋아요. 계속해요.", "당신 얘기는 다 재밌어요. 비밀이에요."] },
+    rainer: { warm: ["음… 그래요?", "그래서요?"], close: ["음, 더 얘기해 줘요.", "듣고 있어요. 천천히."], bond: ["계속해요. 밤 길잖아요.", "음… 목소리로 들으면 더 좋을 텐데."] },
+    anzi: { warm: ["흠, 그래서?", "오, 계속."], close: ["그거 재밌다. 더.", "흠. 너 얘기는 메모 안 해. 그냥 들을래."], bond: ["계속해. 오늘은 내가 들을 차례야.", "……응. 듣고 있어."] },
+    minos: { warm: ["……그래.", "음."], close: ["어. 계속해.", "……듣고 있다고."], bond: ["응. 다 말해.", "……그래서 넌 괜찮냐."] },
+    maquia: { warm: ["……흠.", "계속."], close: ["……듣고 있다.", "흥미롭군."], bond: ["……계속해라.", "네 얘기는 예측이 안 돼서 좋다."] },
   },
 };
 // 시간대 (라스베이거스 시각)
@@ -876,14 +943,12 @@ function replyTo(id, text) {
   // 가끔 한 줄 더 덧붙이거나, 마키아·미노스는 가끔 "……"만
   if (TAIL[id] && out.length === 1 && Math.random() < .18) out.push(TAIL[id]);
   if ((id === "maquia" || id === "minos") && tier(id) === "cold" && Math.random() < .08) { out.length = 0; out.push("……"); }
-  // 호감도: 말을 걸면 조금, 좋은 말이면 더
-  addAff(id, key === "like" || key === "thanks" ? 3 : key === "help" ? 2 : 1);
   r.lastIntent = key; r.lastText = norm; save();
   // 읽고 한참 있다 답하는 때도 있다
   const wait = Math.random() < .15 ? rand(3000, 5000) : rand(700, 1400);
   return [out, wait];
 }
-function relLabel(id) { return `<span class="rel rel-${tier(id)}">관계 · ${TIER_KO[tier(id)]}</span>`; }
+function relLabel(id) { return `<span class="rel rel-${tier(id)}">관계 · ${TIER_KO[tier(id)]} ${aff(id)}</span>`; }
 function syncChatInput() {
   const on = !!cur && !busy;
   $("#chatText").disabled = $("#chatIn button").disabled = !on;
@@ -894,6 +959,7 @@ $("#chatIn").onsubmit = async e => {
   const id = cur, input = $("#chatText"), text = input.value.trim();
   if (!id || !text || busy) return;
   input.value = "";
+  const before = tier(id);
   CHAT[id].log.push(["me", text]); bubble("me", text); save();
   busy = true; syncChatInput();
   const [lines, wait] = replyTo(id, text);
@@ -905,6 +971,7 @@ $("#chatIn").onsubmit = async e => {
   await say(id, lines);
   if (cur === id) $("#chatState").innerHTML = `<span class="live"><i></i>${CH[id].st}</span>${relLabel(id)}`;
   drawChoices(id); syncChatInput();
+  checkTierUp(id, before); renderDevices();
 };
 
 /* ===================================================================

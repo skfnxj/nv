@@ -624,3 +624,13 @@ html { scroll-behavior: smooth; }
   .kc-nc.big { grid-column: auto; }
   .kc-biz > div { border-left: 0; border-top: 1px solid #e5e5e5; padding: 24px 16px; }
 }
+
+/* 호감도 */
+.dev .mini.aff { margin-top: 6px; }
+.dev .mini.aff .b { background: rgba(255,120,140,.12); }
+.dev .mini.aff .b i { background: linear-gradient(90deg, #9aa3b8, #ff8a97); }
+.dev .mini.aff.t-warm .b i { background: linear-gradient(90deg, #e0a14a, #ff8a97); }
+.dev .mini.aff.t-close .b i, .dev .mini.aff.t-bond .b i { background: linear-gradient(90deg, #ff8a97, #ff2438); box-shadow: 0 0 6px rgba(255,36,56,.5); }
+.dev .aff-t { margin-top: 4px; font-size: 10.5px; color: var(--faint); text-align: right; }
+.dev .aff-t.t-warm { color: #e0a14a; } .dev .aff-t.t-close { color: #ff8a97; } .dev .aff-t.t-bond { color: #ff4d63; }
+.rel-bond { color: #ff4d63; border-color: rgba(255,36,56,.8); box-shadow: 0 0 10px rgba(255,36,56,.55); }
