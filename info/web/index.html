@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Corvus Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&family=Bodoni+Moda:ital,opsz,wght@0,6..96,700;0,6..96,900;1,6..96,700&family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-front">
+
+<!-- ============ 1. 공개 사이트: 코르부스 그룹 ============ -->
+<section id="front" class="screen on">
+  <!-- 화면 전체에 고정된 배경 — 스크롤하면 위로 콘텐츠 카드가 올라온다 -->
+  <div class="kc-bg"><img src="../../img/w01.webp" alt=""></div>
+
+  <div class="kc-top">
+    <div class="kc-in">
+      <span class="kc-lang"><a data-lang="ko">KO</a><a data-lang="en">EN</a><button class="kc-bgm" data-bgm>♪ BGM OFF</button></span>
+      <span class="kc-quick"><a data-page="careers" class="hl">인재채용</a><a data-page="investors">투자자 정보</a><a data-page="privacy">개인정보처리방침</a></span>
+    </div>
+  </div>
+  <header class="kc-bar">
+    <div class="kc-in">
+      <button class="kc-burger" id="kcBurger" aria-label="메뉴"><i></i><i></i><i></i></button>
+      <div class="kc-mini" data-page="home">CORVUS GROUP</div>
+      <button class="kc-sbtn" id="kcSBtn" aria-label="검색"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+  </header>
+
+  <div class="kc-hero">
+    <div class="kc-mark">CORVUS GROUP</div>
+    <p class="kc-tag">We keep the <em id="toGate2" class="hidden-door">night</em> running.</p>
+    <form class="kc-search" id="kcSearch" autocomplete="off">
+      <input id="kcQ" placeholder="" aria-label="검색">
+      <button type="submit" aria-label="검색"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </form>
+    <p class="kc-result" id="kcResult"></p>
+    <div class="kc-down" data-page="news"><i></i>SCROLL DOWN</div>
+  </div>
+
+  <!-- 사진 위로 올라오는 흰 카드 -->
+  <main class="kc-card">
+    <section class="kc-news" id="sec-news">
+      <h2 class="kc-h">NEWSROOM</h2>
+      <div class="kc-grid" id="kcNews"></div>
+    </section>
+    <div class="kc-biz">
+      <div data-page="hospitality"><small>HOSPITALITY</small><h3>호텔 · 리조트 · 카페</h3><p>스트립의 카지노 호텔부터 다운타운의 부티크 카페까지. 24시간, 365일.</p><span class="more">자세히 보기 →</span></div>
+      <div data-page="biotech"><small>BIOTECH</small><h3>혈액 · 의약 공급망</h3><p>제휴 제약사와 함께 정제 혈액 제제의 안정적인 수급을 책임집니다.</p><span class="more">자세히 보기 →</span></div>
+      <div data-page="logistics"><small>LOGISTICS</small><h3>야간 특수 물류</h3><p>냉장 컨테이너 기반 심야 배송 네트워크. 해가 뜨기 전에 도착합니다.</p><span class="more">자세히 보기 →</span></div>
+    </div>
+    <!-- 회사 소개 섹션들 (스크립트가 채움) -->
+    <article class="fr-page" id="corpPage"></article>
+  </main>
+
+  <footer class="fr-foot">
+    <span>© 2026 Corvus Group Holdings. All rights reserved. · Las Vegas, NV</span>
+    <span class="fr-links"><a data-page="privacy">Privacy</a><a data-page="investors">Investors</a><a id="toGate" class="emp">Employee Portal</a></span>
+  </footer>
+
+  <!-- 왼쪽에서 열리는 전체 메뉴 -->
+  <div class="kc-dim" id="kcDim"></div>
+  <nav class="kc-drawer" id="kcDrawer">
+    <button class="kc-x" id="kcX" aria-label="닫기">×</button>
+    <div class="kc-dlogo">CORVUS GROUP</div>
+    <ul>
+      <li><a data-page="about">회사 소개<small>About</small></a></li>
+      <li><a data-page="hospitality">호스피탈리티<small>Hospitality</small></a></li>
+      <li><a data-page="biotech">바이오<small>Biotech</small></a></li>
+      <li><a data-page="logistics">특수 물류<small>Logistics</small></a></li>
+      <li><a data-page="careers">인재채용<small>Careers</small></a></li>
+      <li><a data-page="news">뉴스룸<small>Newsroom</small></a></li>
+      <li><a data-page="investors">투자자 정보<small>Investors</small></a></li>
+    </ul>
+    <p class="kc-dfoot">LAS VEGAS · NEW YORK · CAIRO · PARIS</p>
+  </nav>
+
+  <div class="kc-float"><button data-page="home" aria-label="맨 위로">↑</button><button id="kcNext" aria-label="아래로">↓</button></div>
+</section>
+
+<!-- ============ 2. 인증: 손목 디바이스 동기화 ============ -->
+<section id="gate" class="screen">
+  <div class="win gate-win">
+    <i class="cb tl"></i><i class="cb tr"></i><i class="cb bl"></i><i class="cb br"></i>
+    <div class="win-top"><span>HOUSE NETWORK · AUTH</span><span class="live"><i></i>SECURE</span></div>
+    <div class="gate-logo">THE <b>HOUSE</b></div>
+    <p class="gate-sub">코르부스 그룹 직원 포털입니다.<br>등록된 손목 디바이스로만 접속할 수 있습니다.</p>
+    <label class="fld"><span>이름 (선택)</span><input id="pname" maxlength="12" placeholder="미배정" autocomplete="off"></label>
+    <button id="sync" class="btn red">손목 디바이스 동기화</button>
+    <div class="dv-screen" id="bootScreen">
+      <div class="ub-noise"></div>
+      <pre id="bootlog" class="bootlog"></pre>
+      <div class="ub-load dv"><span>SYNCING WRIST DEVICE</span><div class="bar"><i id="bootBar"></i></div><span class="pct" id="bootPct">0%</span></div>
+    </div>
+    <p class="gate-note">※ BGM이 함께 재생돼요. 오른쪽 위 버튼으로 끌 수 있어요.</p>
+  </div>
+</section>
+
+<!-- ============ 3. 하우스 포털 ============ -->
+<section id="portal" class="screen">
+  <div class="ux-noise pt"></div><div class="ux-band pt"></div>
+  <header class="pt-top">
+    <div class="pt-logo">THE <b>HOUSE</b><span>LAS VEGAS BRANCH</span></div>
+    <div class="pt-stat">
+      <span class="chip">LV <b id="clock">--:--</b></span>
+      <span class="chip red">TH° <b id="miniTH">79</b>%</span>
+      <span class="chip gold"><b id="miniCR">0</b> CR</span>
+      <button class="bgm" data-bgm>♪ BGM</button>
+    </div>
+  </header>
+
+  <div class="pt-body">
+    <nav class="pt-nav">
+      <button class="on" data-tab="dash"><i>◈</i>대시보드</button>
+      <button data-tab="devices"><i>◉</i>디바이스 현황</button>
+      <button data-tab="dispatch"><i>▣</i>디스패치</button>
+      <button data-tab="msg"><i>✉</i>메시지<em id="unread">7</em></button>
+      <button data-tab="code"><i>§</i>하우스 규정</button>
+    </nav>
+
+    <main class="pt-main">
+      <!-- 대시보드 -->
+      <div class="tab on" id="tab-dash">
+        <h2 class="ttl">DASHBOARD <span>신입 알터 현황</span></h2>
+        <div class="row2">
+          <div class="win me">
+            <div class="win-top"><span>WRIST DEVICE · <b id="meName">미배정</b></span><span class="live"><i></i>LIVE</span></div>
+            <div class="who"><span>신입 알터</span><span>F 등급</span><span>라스베이거스 지부</span></div>
+            <div class="read">
+              <div class="lbl">THIRST · TH°<b>갈증도 <span class="badge" id="thBadge">위험</span></b></div>
+              <div class="num"><span id="thNum">79</span><small>%</small></div>
+            </div>
+            <div class="bar"><div class="fill" id="thFill"></div><i class="tick" style="left:30%"></i><i class="tick" style="left:60%"></i><i class="tick" style="left:80%"></i></div>
+            <div class="scale"><span style="left:15%">안정</span><span style="left:45%">주의</span><span class="on" style="left:70%">위험</span><span style="left:89%">심각</span></div>
+            <div class="log">
+              <div><i>▸</i>주변 인간의 맥박이 또렷하게 들립니다.</div>
+              <div><i>▸</i>충동을 누르는 데 상당한 집중이 필요합니다.</div>
+              <div class="rec"><i>◆</i>권장 조치 — 기본 급식분 섭취 (거처 냉장 보관함)</div>
+            </div>
+            <div class="me-acts"><button class="btn ghost" id="feed">기본 급식분 섭취</button><button class="btn ghost" id="usePack" disabled>혈액팩 사용 · 0개</button></div>
+            <p class="me-note" id="thNote">갈증도는 시간이 지나면 조금씩 오릅니다.</p>
+            <div class="fx-list" id="fxList"></div>
+          </div>
+          <div class="col">
+            <div class="win kv">
+              <div class="win-top"><span>ASSIGNMENT</span></div>
+              <dl>
+                <dt>위장 직장</dt><dd>카페 벨 에포크 · 다운타운</dd>
+                <dt>거처</dt><dd id="homeLine">근무처 근처 방 (F~E) · 승급 전까지 고정</dd>
+                <dt>담당</dt><dd>총괄 서기장 · 디스패처</dd>
+                <dt>다음 급여일</dt><dd><b id="payday">D-?</b> · 기본급 300 CR / 유지비 80 CR</dd>
+                <dt>다음 임무</dt><dd>수시 배정 · 디스패치 확인</dd>
+                <dt>오늘 근무</dt><dd id="workState">미출근</dd>
+              </dl>
+              <button class="btn ghost" id="checkin">벨 에포크 출근 체크</button>
+            </div>
+            <div class="win notice">
+              <div class="win-top"><span>HOUSE NOTICE</span></div>
+              <ul id="noticeList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 디바이스 현황 -->
+      <div class="tab" id="tab-devices">
+        <h2 class="ttl">DEVICE STATUS <span>라스베이거스 지부 · 조회 권한 F</span></h2>
+        <div class="dev-grid" id="devGrid"></div>
+      </div>
+
+      <!-- 디스패치 -->
+      <div class="tab" id="tab-dispatch">
+        <h2 class="ttl">HOUSE DISPATCH <span>새 임무는 수시로 배정됩니다 · 열린 임무는 20분 뒤 마감</span></h2>
+        <div class="dis-list" id="disList"></div>
+        <p class="hint">임무 보상은 완수와 보고가 확인된 뒤에만 지급됩니다. 거절할 수는 있지만, 배정 취소나 평가 불이익이 생길 수 있습니다.</p>
+      </div>
+
+      <!-- 메시지 -->
+      <div class="tab" id="tab-msg">
+        <h2 class="ttl">MESSAGES <span>하우스 내부 채널 · 대화는 기록될 수 있습니다</span></h2>
+        <div class="msg-wrap">
+          <ul class="msg-list" id="msgList"></ul>
+          <div class="chat win">
+            <div class="win-top"><span id="chatWho">대화를 선택하세요</span><span id="chatState"></span></div>
+            <div class="chat-log" id="chatLog"><p class="empty">왼쪽에서 대화를 고르면, 그쪽에서 먼저 말을 걸어올 거예요.</p></div>
+            <div class="chat-choices" id="chatChoices"></div>
+            <form class="chat-in" id="chatIn" autocomplete="off"><input id="chatText" maxlength="120" placeholder="메시지 입력…" disabled><button type="submit" disabled>전송</button></form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 규정 -->
+      <div class="tab" id="tab-code">
+        <h2 class="ttl">HOUSE CODE <span>신입 알터가 알아야 할 것</span></h2>
+        <div class="code-grid">
+          <div class="win"><div class="win-top"><span>§1 · 알터</span></div><p>공식 종족명은 <b>알터</b>입니다. 인간의 피로 시간을 멈춘 존재로, 늙지 않는 몸과 개체마다 다른 이능을 지닙니다. 대외적으로 이 단어를 쓰지 마십시오.</p></div>
+          <div class="win"><div class="win-top"><span>§2 · 갈증도 TH°</span></div>
+            <table class="tbl"><tr><td>0~29</td><td>안정</td></tr><tr><td>30~59</td><td>주의</td></tr><tr class="r"><td>60~79</td><td>위험</td></tr><tr class="r"><td>80~99</td><td>심각</td></tr><tr class="r"><td>100</td><td>폭주</td></tr></table>
+            <p class="sm">하루에 2~5씩 오르고, 이능을 쓰면 1~10, 몸을 거칠게 쓰거나 싸우면 1~3이 더 오릅니다. 흡혈은 40~70, 응급 처치는 15~30을 낮춥니다.</p></div>
+          <div class="win"><div class="win-top"><span>§3 · 폭주와 오염</span></div><p><b>폭주 개체</b>는 이성을 잃었지만 회복할 수 있습니다. 폭주한 채 약 한 달을 방치하면 영구히 퇴화한 <b class="red">오염체</b>가 됩니다. 오염체는 대화도 협상도 통하지 않습니다.</p></div>
+          <div class="win"><div class="win-top"><span>§4 · 정체 은닉</span></div><p>알터는 평범한 직업과 신분으로 인간 사회에 섞여 삽니다. 인간에게 정체가 드러나는 일은 <b class="red">하우스 규율 위반</b>입니다.</p></div>
+          <div class="win"><div class="win-top"><span>§5 · 임무</span></div><p>임무는 손목 디바이스로 약 2주 간격에 배정됩니다. 거절할 수 있지만, 배정 취소나 평가 불이익이 생길 수 있습니다. 보상은 완수와 보고가 확인될 때만 지급합니다.</p></div>
+          <div class="win"><div class="win-top"><span>§6 · 급여와 거처</span></div>
+            <table class="tbl pay"><tr><th>등급</th><th>기본급</th><th>유지비</th><th>거처</th></tr>
+              <tr class="g"><td>F~E</td><td>300</td><td>80</td><td>근무처 근처 방</td></tr>
+              <tr><td>D~C</td><td>500</td><td>160</td><td>스트립 호텔 장기 객실</td></tr>
+              <tr><td>B~A</td><td>800</td><td>300</td><td>고층 스위트</td></tr>
+              <tr><td>S</td><td>1200</td><td>500</td><td>펜트하우스</td></tr></table>
+            <p class="sm">단위 CR. 기본 급식분은 하우스가 공급하므로 돈이 없어서 굶는 일은 없습니다. 추가분만 크레딧으로 구매합니다.</p></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="pt-foot">
+    <span>© Corvus Group · House Network</span>
+    <span id="ver" class="ver" title="">HOUSE OS v2.6.1 · build 0300</span>
+  </footer>
+</section>
+
+<!-- ============ 4. 언더럭스 (비밀 루트) ============ -->
+<section id="ux" class="screen">
+  <!-- 접속 연출: 지직거리는 암호 채널 화면 -->
+  <!-- 접속 연출: 화면 전체가 지직거리고 인사 한 줄만 -->
+  <div id="uxboot" class="uxboot">
+    <div class="ub-noise"></div>
+    <div class="ub-hello" data-t="Hello :D">Hello :D</div>
+  </div>
+  <div class="ux-noise"></div><div class="ux-band"></div>
+  <header class="ux-top">
+    <div class="ux-logo">UNDER<b>LUX</b><span>// encrypted channel</span></div>
+    <div class="pt-stat">
+      <span class="chip gold">잔액 <b id="uxCR">0</b> CR</span>
+      <button class="bgm" data-bgm>♪ BGM</button>
+      <button class="btn ghost sm" id="uxOut">하우스로 돌아가기</button>
+    </div>
+  </header>
+  <div class="ux-warn">⚠ 이 채널의 대화는 하우스가 기록합니다. 회원 명단과 접속 경로는 외부 유출 금지.</div>
+  <nav class="ux-nav">
+    <button class="on" data-ux="market">매물</button>
+    <button data-ux="board">게시판</button>
+    <button data-ux="noise">NOISE FILTER</button>
+    <button data-ux="intel">구매한 정보</button>
+  </nav>
+  <main class="ux-main">
+    <div class="uxtab on" id="ux-market"><p class="mk-timer" id="mkTimer"></p><div class="mk-list" id="mkList"></div>
+      <div class="win ux-meet"><div class="win-top"><span>📍 직거래</span></div><p id="meet">벨 지하, 셋째 밤 02시. 늦으면 없다.</p></div></div>
+    <div class="uxtab" id="ux-board"><div id="board"></div></div>
+    <div class="uxtab" id="ux-noise">
+      <p class="noise-head">크로니클 제보망 — 인간 쪽에서 새어 나온 이야기들. 노출 위험은 크로니클이 매깁니다.</p>
+      <div id="noise"></div></div>
+    <div class="uxtab" id="ux-intel">
+      <p class="noise-head">언더럭스에서 산 정보는 여기 보관됩니다. 이 보관함도 하우스가 열람할 수 있습니다.</p>
+      <div id="intelList"></div></div>
+  </main>
+</section>
+
+<div id="modal" class="modal"><div class="modal-box"><button class="modal-x" id="modalX">×</button><div id="modalBody"></div></div></div>
+<div id="glitch" class="glitch"></div>
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
