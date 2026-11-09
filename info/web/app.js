@@ -360,7 +360,7 @@ function renderDevices() {
         <div class="loc">📍 ${c.loc}</div>
         <div class="mini">TH°<span class="b"><i style="width:${c.th ?? 0}%"></i></span><em data-th="${id}">${c.th == null ? "??" : c.th + "%"}</em></div>
         <div class="mini aff t-${tier(id)}">호감<span class="b"><i style="width:${aff(id)}%"></i></span><em>${aff(id)}</em></div>
-        <div class="aff-t t-${tier(id)}">${TIER_KO[tier(id)]} · 대화 ${meCount(id)}회</div>
+        <div class="aff-t t-${tier(id)}">${TIER_KO[tier(id)]}</div>
         <div class="memo">${c.memo}</div>
       </div>
     </div>`).join("");
