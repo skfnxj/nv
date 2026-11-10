@@ -835,7 +835,7 @@ function checkTierUp(id, before) {
   renderDevices();
   const m = MILESTONE[id] && MILESTONE[id][now];
   if (m) setTimeout(() => pushMsg(id, m, true), rand(4000, 8000));
-  if (now === "bond") setTimeout(() => tryPhoto(id), rand(25000, 40000));
+  if (now === "close" || now === "bond") setTimeout(() => tryPhoto(id), rand(25000, 40000));
 }
 const lvHour = () => +new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }) % 24;
 const pick = a => a[rand(0, a.length - 1)];
@@ -1136,21 +1136,29 @@ function boardMention(t) {
   ST.once["bd_" + id] = true; save();
   setTimeout(() => pushMsg(id, BOARD_REACT[id]), rand(20000, 40000));
 }
-// 각별함이 되면 사진 한 장 (이미지가 올라와 있을 때만 보낸다)
+// 사진 메시지 (이미지가 올라와 있을 때만 보낸다)
+// 루안·제니스·미노스는 가까움에 찍은 것, 각별함에 셀카. 나머지는 각별함에 한 장
 const PHOTO = {
-  ruan: [["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]],
-  jenis: [["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]],
-  rainer: [["뉴올리언스 왔어요. 비 와요."], ["문 앞 화분, 아직 살아 있더라고요."]],
-  anzi: [["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]],
-  minos: [["끝났다. 다이너."], ["……네 자리 비어 있다."]],
-  jin: [["새로 들였어."], ["……같이 들을 거면 와."]],
-  maquia: [["네 차례다."], ["……서두를 필요는 없다."]],
+  ruan: { close: ["ruan", ["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]], bond: ["ruan2", ["어디냐고 물어볼까 봐."], ["……여기."]] },
+  jenis: { close: ["jenis", ["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]], bond: ["jenis2", ["편지 대신이에요."], ["……한 줄은 썼어요."]] },
+  minos: { close: ["minos", ["끝났다. 다이너."], ["……네 자리 비어 있다."]], bond: ["minos02", ["……이렇게 찍는 거 맞냐."], ["지우지 마라."]] },
+  rainer: { bond: ["rainer", ["뉴올리언스 왔어요. 비 와요."], ["문 앞 화분, 아직 살아 있더라고요."]] },
+  anzi: { bond: ["anzi", ["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]] },
+  jin: { bond: ["jin", ["새로 들였어."], ["……같이 들을 거면 와."]] },
+  maquia: { bond: ["maquia", ["네 차례다."], ["……서두를 필요는 없다."]] },
 };
 function tryPhoto(id) {
-  const r = REL(id);
-  if (!PHOTO[id] || r.photo || tier(id) !== "bond") return;
-  const src = `../../photo/${id}.webp`, im = new Image();
-  im.onload = () => { if (r.photo) return; r.photo = true; save(); pushMsg(id, [...PHOTO[id][0], "IMG:" + src, ...PHOTO[id][1]]); };
+  const r = REL(id), P = PHOTO[id]; if (!P) return;
+  // 예전 저장분: 각별함 사진 하나를 받았던 사람은 첫 사진을 받은 걸로
+  if (!r.photos) { r.photos = {}; if (r.photo) r.photos[Object.keys(P)[0]] = true; }
+  const st = Object.keys(P).find(k => !r.photos[k] && TIER_N[tier(id)] >= TIER_N[k]);
+  if (!st) return;
+  const [file, pre, post] = P[st], src = `../../photo/${file}.webp`, im = new Image();
+  im.onload = () => {
+    if (r.photos[st]) return; r.photos[st] = true; save();
+    pushMsg(id, [...pre, "IMG:" + src, ...post]);
+    if (Object.keys(P).some(k => !r.photos[k] && TIER_N[tier(id)] >= TIER_N[k])) setTimeout(() => tryPhoto(id), rand(60000, 120000));
+  };
   im.src = src;
 }
 setTimeout(() => ORDER.forEach(id => tryPhoto(id)), 15000);
