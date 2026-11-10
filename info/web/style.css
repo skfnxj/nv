@@ -653,3 +653,8 @@ html { scroll-behavior: smooth; }
 @keyframes cmIn { from { opacity: 0; transform: translateY(6px); background: rgba(176,108,255,.18); } to { opacity: 1; transform: none; background: transparent; } }
 .post .lk.pop { animation: lkPop .45s; }
 @keyframes lkPop { 40% { transform: scale(1.18); background: rgba(255,61,82,.25); } }
+
+/* 구매 내역 · 물건 */
+.post.goods h4 { display: flex; align-items: baseline; gap: 8px; }
+.post .cnt { font-style: normal; margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--gold-hi); }
+.post.goods .cat { color: var(--purple); }

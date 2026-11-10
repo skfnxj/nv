@@ -1381,6 +1381,33 @@ const BOARD_POOL = [
   { who: "@gearhead", t: "[후기] 이어피스 써 봄", p: "맥박 소리 진짜 줄어듦. 버스 탈 수 있게 됨. 신입들한테 추천.", cm: [["@bellhop", "신입 들었냐 이거 사라"]] },
 ];
 const NOISE_LOCAL = typeof NOISE !== "undefined" ? NOISE : [];
+// 노이즈 필터에 새로 들어오는 제보 (시간이 지나며 하나씩)
+const NOISE_POOL = [
+  { who: "📰 제보", h: "♥ 37", t: "새벽 3시 헌혈 버스, 줄 선 사람이 없는데 불이 켜져 있음", p: "더 세이렌 별관 앞. 문 닫혀 있는데 안에서 사람 그림자 셋. 아침엔 버스가 없어짐.",
+    cm: [["익명", "그 캠페인 금요일만 한다며?"], ["익명", "오늘 화요일인데"]], risk: ["주의", "risk-m", "반복 목격 · 장소 특정됨"] },
+  { who: "📰 제보", h: "♥ 89", t: "프리몬트 모텔 객실 창문이 전부 은박지", p: "2층 끝방 세 개가 창문을 은박지로 막아 둠. 낮에 노크해도 대답 없고 밤 11시에만 불 켜짐.",
+    cm: [["익명", "마약 제조 아님?"], ["익명", "경찰 불렀는데 아무도 안 나왔대"]], risk: ["주의", "risk-m", "주민 신고 1건"] },
+  { who: "📰 제보", h: "♥ 15", t: "벨 에포크 알바생 손이 차갑지 않았다는 후기", p: "커피 받을 때 손 닿았는데 그냥 따뜻했음. 창백해 보여서 기대했는데 ㅋㅋ 그냥 피곤한 사람인 듯.",
+    cm: [["익명", "뭘 기대한 건데"], ["익명", "이 게시판 사람들 상상력 무엇"]], risk: ["낮음", "risk-l", "오히려 의심 해소"] },
+  { who: "📰 제보", h: "♥ 142", t: "LVMPD 야간 형사 한 명, 현장마다 혼자 먼저 와 있음", p: "최근 석 달 프리몬트 쪽 사건 다섯 건. 전부 같은 형사가 순찰차보다 먼저 도착. 동료들도 이상하다고 함.",
+    cm: [["익명", "그냥 일 잘하는 거 아님?"], ["익명", "새벽 3시에 매번?"]], risk: ["위험", "risk-h", "경찰 내부 소문 · 이름 거론 시도"] },
+  { who: "📰 제보", h: "♥ 64", t: "다운타운 철교 밑 개 짖는 소리, 그런데 개가 없음", p: "새벽마다 뭔가 긁는 소리랑 낮은 울음. 노숙인들이 그 구간을 피해서 잠.",
+    cm: [["익명", "코요테겠지"], ["익명", "코요테가 형광 조끼를 물고 다니냐"]], risk: ["주의", "risk-m", "물증 1점 · 사진 없음"] },
+  { who: "📰 제보", h: "♥ 23", t: "카지노 VIP룸 웨이터가 10년째 얼굴이 똑같다", p: "아빠가 2015년에 찍은 사진에 나온 웨이터랑 어제 본 사람이 똑같음. 쌍둥이일 수도.",
+    cm: [["익명", "피부 관리 비법 공유 좀"], ["익명", "사진 올려 봐"]], risk: ["주의", "risk-m", "사진 대조 시도 · 확산 중"] },
+  { who: "📰 제보", h: "♥ 51", t: "혈액원 폐기 기록이 한 달에 두 번씩 비어 있음", p: "의료 행정 일하는 친구 말로는, 폐기 예정 팩 수량이 장부랑 안 맞는 날이 꼭 있대. 늘 같은 요일.",
+    cm: [["익명", "그냥 행정 실수"], ["익명", "같은 요일이면 실수가 아니지"]], risk: ["위험", "risk-h", "내부자 발언 · 기록 존재"] },
+  { who: "📰 제보", h: "♥ 9", t: "스트립에서 송곳니 코스프레한 사람 봄", p: "할로윈도 아닌데 ㅋㅋ 진짜 뱀파이어면 저렇게 티 안 내겠지.",
+    cm: [["익명", "맞음 진짜는 송곳니도 없을걸"], ["익명", "↑ 너 뭐 아냐?"]], risk: ["낮음", "risk-l", "농담 · 댓글 하나만 주의"] },
+];
+function noisePosts() { return [...(ST.extraNoise || []).map(i => ({ ...NOISE_POOL[i], fresh: true })), ...NOISE_LOCAL]; }
+function addNoise() {
+  ST.extraNoise = ST.extraNoise || [];
+  const left = NOISE_POOL.map((_, i) => i).filter(i => !ST.extraNoise.includes(i));
+  if (!left.length) return false;
+  ST.extraNoise.unshift(left[rand(0, left.length - 1)]); save(); renderUX();
+  return true;
+}
 function boardPosts() { return [...ST.extraPosts.map(i => ({ ...BOARD_POOL[i], fresh: true })), ...BOARD]; }
 function renderUX() {
   const left = Math.max(0, Math.ceil((ST.mk.at - NOW()) / 1000));
@@ -1405,10 +1432,20 @@ function renderUX() {
       ${noise ? `<div class="risk">⚠ 노출 위험｜<b class="${x.risk[1]}">${x.risk[0]}</b> (${x.risk[2]})</div>` : ""}</div>`;
   };
   $("#board").innerHTML = `<p class="bd-live"><i></i>LIVE · 지금 <b id="bdOn">${$("#bdOn") ? $("#bdOn").textContent : rand(14, 26)}</b>명 보는 중</p>` + boardPosts().map((x, i) => post(x, "b" + x.t)).join("");
-  $("#noise").innerHTML = NOISE_LOCAL.map(x => post(x, "n" + x.t, true)).join("");
-  $("#intelList").innerHTML = ST.intel.length ? ST.intel.map(x => `
-    <div class="win post"><div class="ph"><b>${x.who}</b><span>${new Date(x.at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
-      <h4>${x.t}</h4><p class="rc-info">${x.info}</p></div>`).join("") : `<p class="noise-head">아직 산 정보가 없습니다. 매물 탭의 '정보'·'기밀' 항목을 사면 여기 쌓입니다.</p>`;
+  $("#noise").innerHTML = noisePosts().map(x => post(x, "n" + x.t, true)).join("");
+  // 산 정보 + 산 물건(같은 물건은 한 줄, 개수만 늘어남)을 최근 순으로
+  const when = at => at ? new Date(at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  const goods = MK_POOL.filter(m => !m.info && ST.bought[m.id]).map(m => {
+    const F = FX[m.id], st = m.id === "pack" ? `남은 팩 ${ST.pack}개` : F && F.perm ? (ST.perm[m.id] ? "설치됨" : "") : F && F.rent ? (hasFx(m.id) ? `대여 중 · ${fxLeft(m.id)}분 남음` : "반납됨") : "";
+    return { at: (ST.boughtAt || {})[m.id] || 0, html: `
+    <div class="win post goods"><div class="ph"><b>${m.who}</b><span>${when((ST.boughtAt || {})[m.id])}</span></div>
+      <h4>${m.t}<em class="cnt">× ${ST.bought[m.id]}</em></h4><p class="rc-info"><span class="cat">${m.cat}</span>${st ? ` · ${st}` : ""}</p></div>` };
+  });
+  const infos = ST.intel.map(x => ({ at: x.at, html: `
+    <div class="win post"><div class="ph"><b>${x.who}</b><span>${when(x.at)}</span></div>
+      <h4>${x.t}</h4><p class="rc-info">${x.info}</p></div>` }));
+  const all = [...goods, ...infos].sort((a, b) => b.at - a.at);
+  $("#intelList").innerHTML = all.length ? all.map(x => x.html).join("") : `<p class="noise-head">아직 산 것이 없습니다. 매물 탭에서 사면 여기 쌓입니다.</p>`;
   $$("[data-like]").forEach(b => b.onclick = () => { const k = b.dataset.like; ST.likes[k] = (ST.likes[k] || 0) ? 0 : 1; save(); renderUX(); });
 }
 /* 게시판 실시간 — 게시판을 보고 있으면 댓글이 하나씩 달리고 공감 수가 오른다 (달린 댓글은 저장) */
@@ -1457,7 +1494,7 @@ setTimeout(boardLive, 5000);
 function buy(id) {
   const m = MK_POOL.find(x => x.id === id), pack = id === "pack";
   if (ST.cr < m.pr) { toast(`잔액 부족 · 보유 ${ST.cr} CR / 필요 ${m.pr} CR · 디스패치 임무로 벌 수 있어요`); return; }
-  ST.cr -= m.pr; ST.bought[id] = (ST.bought[id] || 0) + 1;
+  ST.cr -= m.pr; ST.bought[id] = (ST.bought[id] || 0) + 1; (ST.boughtAt = ST.boughtAt || {})[id] = NOW();
   if (!ST.mk.got.includes(id)) ST.mk.got.push(id);
   if (pack) ST.pack += 2;
   const F = FX[id];
@@ -1545,7 +1582,8 @@ function randomEvent() {
     const left = BOARD_POOL.map((_, i) => i).filter(i => !ST.extraPosts.includes(i));
     if (left.length) { ST.extraPosts.unshift(left[rand(0, left.length - 1)]); save(); renderUX(); if ($("#ux").classList.contains("on")) toast("게시판에 새 글이 올라왔습니다."); }
     else shiftDevice();
-  } else if (r < .85) shiftDevice();
+  } else if (r < .68) { if (addNoise()) { if ($("#ux").classList.contains("on")) toast("NOISE FILTER · 새 제보가 들어왔습니다."); } else shiftDevice(); }
+  else if (r < .85) shiftDevice();
   else { const n = NOTICE_POOL[rand(0, NOTICE_POOL.length - 1)]; addNotice(n); toast(`[하우스 공지] ${n[2].slice(0, 26)}…`); }
 }
 (function loop() { setTimeout(() => { randomEvent(); loop(); }, rand(35, 70) * 1000); })();
@@ -1564,6 +1602,7 @@ function welcomeBack() {
     for (let i = 0; i < want; i++) if (ambient(true, true)) n++;
     const left = BOARD_POOL.map((_, i) => i).filter(i => !ST.extraPosts.includes(i));
     if (left.length) ST.extraPosts.unshift(left[rand(0, left.length - 1)]);
+    addNoise();
     addNotice(NOTICE_POOL[rand(0, NOTICE_POOL.length - 1)]);
     shiftDevice();
     setTimeout(() => toast(`자리를 비운 사이 · 갈증도 +${up} · 새 메시지 ${n}건`, 4200), 1300);
