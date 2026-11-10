@@ -1437,7 +1437,7 @@ function renderUX() {
       <h4>${x.t}</h4><p>${x.p}</p>
       <div class="cm">${cms.map(([w, t]) => `<div><b>${w}</b>${t}</div>`).join("")}</div>
       ${noise ? "" : my ? `<div class="cm-my"><div class="cm-mine"><b>${escH(myH())}</b>${escH(my.t)}<small>${when(my.at)}</small><button class="cm-x" data-uncm="${escH(k)}" title="지우고 다시 쓰기">✕</button></div>${(my.re || []).map(([w, t]) => `<div class="cm-re"><b>${w}</b>${t}</div>`).join("")}</div>`
-        : `<form class="cm-form" data-cmk="${escH(k)}"><input maxlength="80" placeholder="댓글 하나 남기기 (글마다 1개)" value="${escH(CM_DRAFT[k] || "")}"><button class="btn sm">등록</button></form>`}
+        : `<form class="cm-form" data-cmk="${escH(k)}"><input maxlength="80" placeholder="댓글 남기기" value="${escH(CM_DRAFT[k] || "")}"><button class="btn sm">등록</button></form>`}
       ${noise ? `<div class="risk"><span>⚠ 노출 위험｜<b class="${x.risk[1]}">${x.risk[0]}</b> (${x.risk[2]})</span><button class="nz-ok ${ok ? "on" : ""}" data-nzok="${escH(k)}">${ok ? `✓ 확인함 · ${when(ok)}` : "□ 위험 확인"}</button></div>` : ""}</div>`;
   };
   $("#board").innerHTML = `<p class="bd-live"><i></i>LIVE · 지금 <b id="bdOn">${$("#bdOn") ? $("#bdOn").textContent : rand(14, 26)}</b>명 보는 중</p>` + boardPosts().map((x, i) => post(x, "b" + x.t)).join("");
