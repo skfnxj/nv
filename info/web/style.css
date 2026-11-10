@@ -658,3 +658,25 @@ html { scroll-behavior: smooth; }
 .post.goods h4 { display: flex; align-items: baseline; gap: 8px; }
 .post .cnt { font-style: normal; margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--gold-hi); }
 .post.goods .cat { color: var(--purple); }
+/* 내 댓글 · 반응 */
+.post .cm-my { margin-top: 8px; display: grid; gap: 4px; font-size: 13px; color: var(--dim); }
+.post .cm-my b { font-family: var(--mono); font-weight: 500; color: var(--purple); margin-right: 6px; }
+.post .cm-mine { color: #fff; overflow-wrap: anywhere; }
+.post .cm-mine b { color: var(--gold-hi); }
+.post .cm-mine small, .post .cm-re small { margin-left: 8px; font-family: var(--mono); font-size: 10px; color: var(--faint); }
+.post .cm-x { margin-left: 8px; font-size: 11px; color: var(--faint); }
+.post .cm-x:hover { color: var(--red); }
+.post .cm-re { padding-left: 14px; }
+.post .cm-re::before { content: "└ "; color: var(--faint); }
+.post .cm-form { display: flex; gap: 6px; margin-top: 8px; }
+.post .cm-form input { flex: 1; min-width: 0; padding: 6px 10px; font: inherit; font-size: 13px; color: #fff; background: rgba(0,0,0,.35); border: 1px solid rgba(176,108,255,.35); border-radius: 6px; }
+.post .cm-form input:focus { outline: none; border-color: var(--purple); }
+/* 노이즈 필터 위험 확인 */
+.risk { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.nz-ok { margin-left: auto; padding: 2px 10px; font-family: var(--mono); font-size: 11.5px; color: var(--dim); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; }
+.nz-ok:hover { border-color: #5be38c; color: #5be38c; }
+.nz-ok.on { color: #05070d; background: #5be38c; border-color: #5be38c; }
+.post.checked { opacity: .62; }
+.post.checked:hover { opacity: 1; }
+.nz-count { margin-bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--faint); }
+.nz-count b { color: #5be38c; }

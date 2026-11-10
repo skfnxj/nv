@@ -1408,6 +1408,9 @@ function addNoise() {
   ST.extraNoise.unshift(left[rand(0, left.length - 1)]); save(); renderUX();
   return true;
 }
+const escH = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const myH = () => "@" + (ST.name || "신입");
+const CM_DRAFT = {};
 function boardPosts() { return [...ST.extraPosts.map(i => ({ ...BOARD_POOL[i], fresh: true })), ...BOARD]; }
 function renderUX() {
   const left = Math.max(0, Math.ceil((ST.mk.at - NOW()) / 1000));
@@ -1422,19 +1425,40 @@ function renderUX() {
         : got && !m.repeat ? `<span class="res">구매함</span>` : `<button class="btn sm" data-buy="${m.id}">구매</button>`}</div>`;
   }).join("");
   $$("[data-buy]").forEach(b => b.onclick = () => buy(b.dataset.buy));
+  const when = at => at ? new Date(at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  // 다시 그려도 쓰던 댓글과 커서는 그대로
+  const af = document.activeElement, fk = af && af.closest && af.closest(".cm-form") ? af.closest(".cm-form").dataset.cmk : null, fs = fk ? af.selectionStart : 0;
   const post = (x, k, noise) => {
     const lk = parseInt(String(x.h || "♥ 3").replace(/\D/g, "")) + (ST.likes[k] || 0) + ((ST.bump || {})[k] || 0);
     const cms = noise ? x.cm : [...x.cm, ...((ST.liveCm || {})[k] || [])];
+    const my = !noise && (ST.myCm || {})[k], ok = noise && (ST.noiseOk || {})[k];
     return `
-    <div class="win post ${x.fresh ? "fresh" : ""}" data-k="${k}"><div class="ph"><b>${x.who}</b>${x.fresh ? '<em class="newp">NEW</em>' : ""}<button class="lk" data-like="${k}">♥ ${lk}</button></div>
+    <div class="win post ${x.fresh ? "fresh" : ""} ${ok ? "checked" : ""}" data-k="${escH(k)}"><div class="ph"><b>${x.who}</b>${x.fresh ? '<em class="newp">NEW</em>' : ""}<button class="lk" data-like="${escH(k)}">♥ ${lk}</button></div>
       <h4>${x.t}</h4><p>${x.p}</p>
       <div class="cm">${cms.map(([w, t]) => `<div><b>${w}</b>${t}</div>`).join("")}</div>
-      ${noise ? `<div class="risk">⚠ 노출 위험｜<b class="${x.risk[1]}">${x.risk[0]}</b> (${x.risk[2]})</div>` : ""}</div>`;
+      ${noise ? "" : my ? `<div class="cm-my"><div class="cm-mine"><b>${escH(myH())}</b>${escH(my.t)}<small>${when(my.at)}</small><button class="cm-x" data-uncm="${escH(k)}" title="지우고 다시 쓰기">✕</button></div>${(my.re || []).map(([w, t]) => `<div class="cm-re"><b>${w}</b>${t}</div>`).join("")}</div>`
+        : `<form class="cm-form" data-cmk="${escH(k)}"><input maxlength="80" placeholder="댓글 하나 남기기 (글마다 1개)" value="${escH(CM_DRAFT[k] || "")}"><button class="btn sm">등록</button></form>`}
+      ${noise ? `<div class="risk"><span>⚠ 노출 위험｜<b class="${x.risk[1]}">${x.risk[0]}</b> (${x.risk[2]})</span><button class="nz-ok ${ok ? "on" : ""}" data-nzok="${escH(k)}">${ok ? `✓ 확인함 · ${when(ok)}` : "□ 위험 확인"}</button></div>` : ""}</div>`;
   };
   $("#board").innerHTML = `<p class="bd-live"><i></i>LIVE · 지금 <b id="bdOn">${$("#bdOn") ? $("#bdOn").textContent : rand(14, 26)}</b>명 보는 중</p>` + boardPosts().map((x, i) => post(x, "b" + x.t)).join("");
-  $("#noise").innerHTML = noisePosts().map(x => post(x, "n" + x.t, true)).join("");
+  const nz = noisePosts(), nzN = nz.filter(x => (ST.noiseOk || {})["n" + x.t]).length;
+  $("#noise").innerHTML = `<p class="nz-count">위험 확인 <b>${nzN}</b> / ${nz.length}${nzN === nz.length ? " · 전부 확인함" : ""}</p>` + nz.map(x => post(x, "n" + x.t, true)).join("");
+  $$(".cm-form").forEach(f => {
+    const k = f.dataset.cmk, i = f.querySelector("input");
+    i.oninput = () => { CM_DRAFT[k] = i.value; };
+    f.onsubmit = e => {
+      e.preventDefault(); const t = i.value.trim(); if (!t) return;
+      (ST.myCm = ST.myCm || {})[k] = { t, at: NOW(), re: [] }; delete CM_DRAFT[k]; save(); renderUX(); cmReact(k);
+    };
+    if (k === fk) { i.focus(); try { i.setSelectionRange(fs, fs); } catch {} }
+  });
+  $$("[data-uncm]").forEach(b => b.onclick = () => { delete ST.myCm[b.dataset.uncm]; save(); renderUX(); });
+  $$("[data-nzok]").forEach(b => b.onclick = () => {
+    const k = b.dataset.nzok; ST.noiseOk = ST.noiseOk || {};
+    if (ST.noiseOk[k]) delete ST.noiseOk[k]; else ST.noiseOk[k] = NOW();
+    save(); renderUX();
+  });
   // 산 정보 + 산 물건(같은 물건은 한 줄, 개수만 늘어남)을 최근 순으로
-  const when = at => at ? new Date(at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
   const goods = MK_POOL.filter(m => !m.info && ST.bought[m.id]).map(m => {
     const F = FX[m.id], st = m.id === "pack" ? `남은 팩 ${ST.pack}개` : F && F.perm ? (ST.perm[m.id] ? "설치됨" : "") : F && F.rent ? (hasFx(m.id) ? `대여 중 · ${fxLeft(m.id)}분 남음` : "반납됨") : "";
     return { at: (ST.boughtAt || {})[m.id] || 0, html: `
@@ -1491,6 +1515,33 @@ function boardLive() {
   }, rand(1400, 2600));
 }
 setTimeout(boardLive, 5000);
+/* 내 댓글 — 글마다 하나. 달면 다른 사람이 한두 개 반응한다 (반응도 저장) */
+const RE_ANY = ["↑ 신입 냄새 나는데 ㅋㅋ", "ㄹㅇ 동의", "그건 아닌 듯", "말 조심해. 이 채널 로그 남는다", "누구냐 너", "ㅋㅋㅋ 이 사람 웃기네", "신입이면 매물 탭부터 봐", "공감 누르고 감", "처음 보는 아이디인데"];
+const RE_KEY = [
+  [/\?|？|뭐|왜|어떻게|진짜/, ["그건 아무도 모름", "나도 그게 궁금했음", "물어보는 거 보니 신입이네"]],
+  [/루안/, ["루안 얘기는 디스패치가 싫어함 ㅋㅋ", "그 사람 또 디바이스 껐겠지"]],
+  [/마키아/, ["……그 이름은 쓰지 말자", "이 댓글 곧 사라질 듯"]],
+  [/안지|크로니클|기자/, ["안지가 이 댓글 캡처했을걸"]],
+  [/서기장|배정|등급/, ["서기장 펜 부러지는 소리 남", "등급 얘기는 신입한테 아픈 데임"]],
+  [/배고|갈증|향|팩|피/, ["향 얘기 하지 마 배고파진다", "팩 남았으면 하나 먹고 와"]],
+  [/ㅋ|ㅎ/, ["ㅋㅋㅋㅋ", "웃을 때가 아님 ㅋㅋ"]],
+];
+function cmReact(k) { let d = 0; for (let i = 0, n = Math.random() < .45 ? 2 : 1; i < n; i++) { d += rand(2500, 5000); setTimeout(() => reactOne(k), d); } }
+function reactOne(k) {
+  const my = (ST.myCm || {})[k]; if (!my || my.re.length >= 2) return;
+  const hit = RE_KEY.filter(([re]) => re.test(my.t)).flatMap(x => x[1]), said = new Set(my.re.map(r => r[1]));
+  const pool = [...hit, ...hit, ...RE_ANY].filter(t => !said.has(t)), whoP = LIVE_WHO.filter(w => !my.re.some(r => r[0] === w));
+  const line = pick(pool), who = pick(whoP);
+  const box = () => { const el = $$("#board .post").find(p => p.dataset.k === k); return el && el.querySelector(".cm-my"); };
+  const ty = document.createElement("div"); ty.className = "cm-typing"; ty.innerHTML = `<b>${who}</b>입력 중…`;
+  if (box()) box().appendChild(ty);
+  setTimeout(() => {
+    ty.remove(); if ((ST.myCm || {})[k] !== my) return;
+    my.re.push([who, line]); save();
+    const b = box(); if (!b) return;
+    const d = document.createElement("div"); d.className = "cm-re cm-new"; d.innerHTML = `<b>${who}</b>${line}<small>방금</small>`; b.appendChild(d);
+  }, rand(1400, 2400));
+}
 function buy(id) {
   const m = MK_POOL.find(x => x.id === id), pack = id === "pack";
   if (ST.cr < m.pr) { toast(`잔액 부족 · 보유 ${ST.cr} CR / 필요 ${m.pr} CR · 디스패치 임무로 벌 수 있어요`); return; }
