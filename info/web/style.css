@@ -680,3 +680,7 @@ html { scroll-behavior: smooth; }
 .post.checked:hover { opacity: 1; }
 .nz-count { margin-bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--faint); }
 .nz-count b { color: #5be38c; }
+/* 사진 메시지 */
+.bub.photo { padding: 4px; background: rgba(0,0,0,.25); }
+.bub.photo img { display: block; width: 100%; max-width: 240px; border-radius: 12px; cursor: zoom-in; }
+.modal.photo .ph-full { display: block; max-width: 100%; max-height: 80vh; margin: 0 auto; border-radius: 10px; }

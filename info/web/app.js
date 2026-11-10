@@ -649,7 +649,7 @@ let cur = null, busy = false;
 
 function renderList() {
   $("#msgList").innerHTML = ORDER.map(id => {
-    const c = CH[id], s = CHAT[id], last = s.log.length ? s.log[s.log.length - 1][1] : TALK[id].preview;
+    const c = CH[id], s = CHAT[id], last = s.log.length ? shortTxt(s.log[s.log.length - 1][1]) : TALK[id].preview;
     return `<li class="${cur === id ? "on" : ""} ${s.unread ? "new" : ""}" data-chat="${id}" style="--ac:${c.ac}">
       <img src="../../char/${id}-e01.webp" alt=""><div><b>${c.ko}</b><small>${last}</small></div></li>`;
   }).join("");
@@ -659,18 +659,30 @@ function renderList() {
 }
 function bubble(who, text) {
   const p = document.createElement("p");
-  p.className = "bub " + who; p.textContent = text;
+  p.className = "bub " + who;
+  // "IMG:주소" 는 사진 메시지
+  if (String(text).startsWith("IMG:")) {
+    const src = text.slice(4), im = new Image(); p.classList.add("photo");
+    im.src = src; im.alt = "사진"; im.onload = () => { $("#chatLog").scrollTop = 1e6; };
+    im.onclick = () => modal(`<img class="ph-full" src="${src}" alt="">`, "photo");
+    p.appendChild(im);
+  } else p.textContent = text;
   $("#chatLog").appendChild(p); $("#chatLog").scrollTop = 1e6;
 }
+const shortTxt = t => String(t).startsWith("IMG:") ? "📷 사진" : t;
 function openChat(id) {
-  cur = id; const s = CHAT[id], c = CH[id];
-  s.unread = false; save();
+  cur = id; const s = CHAT[id], c = CH[id], r = REL(id);
+  s.unread = false;
+  // 며칠 만에 열면 첫마디가 다르다
+  const gap = r.seenAt ? NOW() - r.seenAt : 0; r.seenAt = NOW(); save();
   $("#chatWho").innerHTML = `<b>${c.ko}</b> · ${c.code}`;
   $("#chatState").innerHTML = `<span class="live"><i></i>${c.st}</span>${relLabel(id)}`;
   $("#chatLog").innerHTML = "";
   s.log.forEach(([w, t]) => bubble(w, t));
   renderList();
-  if (!s.started) { s.started = true; play(id, "start"); } else drawChoices(id);
+  if (!s.started) { s.started = true; play(id, "start"); }
+  else if (gap >= 2 * 864e5 && !busy && !REL(id).pend) say(id, [AWAY[id](Math.floor(gap / 864e5))]).then(() => drawChoices(id));
+  else drawChoices(id);
   syncChatInput();
 }
 async function say(id, lines) {
@@ -679,7 +691,12 @@ async function say(id, lines) {
     if (cur !== id || !$("#tab-msg").classList.contains("on")) { CHAT[id].log.push(["them", line]); CHAT[id].unread = cur !== id; continue; }
     const ty = document.createElement("p"); ty.className = "typing"; ty.textContent = CH[id].ko + " 입력 중";
     $("#chatLog").appendChild(ty); $("#chatLog").scrollTop = 1e6;
-    await new Promise(r => setTimeout(r, 500 + Math.min(1600, line.length * 38)));
+    // 가까워진 루안·미노스·마키아는 가끔 쓰다 지운다
+    if (["ruan", "minos", "maquia"].includes(id) && TIER_N[tier(id)] >= 2 && line.length > 6 && Math.random() < .3) {
+      await new Promise(r => setTimeout(r, 1000)); ty.remove();
+      await new Promise(r => setTimeout(r, 1600)); $("#chatLog").appendChild(ty); $("#chatLog").scrollTop = 1e6;
+    }
+    await new Promise(r => setTimeout(r, String(line).startsWith("IMG:") ? 1800 : 500 + Math.min(1600, line.length * 38)));
     ty.remove();
     CHAT[id].log.push(["them", line]);
     if (cur === id) bubble("them", line); else CHAT[id].unread = true; // 그사이 다른 대화로 옮겼으면 그쪽 창에 찍지 않는다
@@ -710,13 +727,16 @@ function pushMsg(id, lines, silent) {
   if (cur === id && $("#tab-msg").classList.contains("on") && !busy) { say(id, lines).then(() => drawChoices(id)); return; }
   lines.forEach(l => s.log.push(["them", l]));
   s.unread = true; save(); renderList();
-  if (!silent) toast(`✉ ${CH[id].ko}: ${lines[0]}`);
+  if (!silent) toast(`✉ ${CH[id].ko}: ${shortTxt(lines[0])}`);
 }
 function ambient(silent, force) {
   if (!ST.amb) ST.amb = { seen: {}, last: 0, each: {}, reset: NOW() + AMB_RESET };
   const A = ST.amb;
   if (NOW() >= A.reset) { A.seen = {}; A.reset = NOW() + AMB_RESET; }
   if (!force && NOW() - A.last < AMB_GAP) return false;
+  // 내가 했던 말 기억 · 다른 사람한테 들은 소문이 먼저
+  const sp = specialAmb(force);
+  if (sp) { const [sid, lines] = sp; A.last = NOW(); A.each[sid] = NOW(); save(); pushMsg(sid, lines, silent); return true; }
   const ids = (hasFx("case") ? ORDER.filter(x => x !== "jin") : ORDER).filter(id =>
     (force || NOW() - (A.each[id] || 0) >= AMB_GAP_EACH) && ambPool(id).some((_, i) => !(A.seen[id] || []).includes(i)));
   if (!ids.length) return false;
@@ -815,6 +835,7 @@ function checkTierUp(id, before) {
   renderDevices();
   const m = MILESTONE[id] && MILESTONE[id][now];
   if (m) setTimeout(() => pushMsg(id, m, true), rand(4000, 8000));
+  if (now === "bond") setTimeout(() => tryPhoto(id), rand(25000, 40000));
 }
 const lvHour = () => +new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }) % 24;
 const pick = a => a[rand(0, a.length - 1)];
@@ -992,17 +1013,23 @@ function replyTo(id, text) {
   // 같은 말 반복
   r.reps[norm] = (r.reps[norm] || 0) + 1;
   if (r.reps[norm] >= 3) { save(); return [[REP[id](r.reps[norm])], 900]; }
+  // 나중에 꺼낼 말 기억해 두기 (배고프다 · 무섭다 · 피곤하다 · 아프다 · 싫다)
+  const mk = MEM_KEYS.find(([, re]) => re.test(t));
+  if (mk && MEMBACK[id] && MEMBACK[id][mk[0]]) r.mem = { k: mk[0], at: NOW() };
   const fo = followUp(id, t, norm);
   if (fo) return [fo, rand(900, 1600)];
   if (SHORT_RE.test(norm) || norm.length <= 1) return [[SHORT[id]], 1200];
 
   const hit = INTENTS.find(([, re]) => re.test(t)), key = hit ? hit[0] : "fallback";
+  // 가까워지면 가끔 이름을 부른다
+  if (ST.name && TIER_N[tier(id)] >= 2 && key !== "bye" && NOW() - (r.nameAt || 0) > 5 * 60000 && Math.random() < .22) { out.push(CALL[id](ST.name, tier(id))); r.nameAt = NOW(); }
   // 갈증도가 높으면 먼저 그 얘기부터
   if (ST.th >= 80 && key !== "thirst" && Math.random() < .4) out.push(pick(REPLY[id].thirst)(ST.th));
   let line;
   // 다른 사람 이름 · 장소를 집어서 받아치기
   const other = Object.keys(NAMES).find(k => k !== id && NAMES[k].test(t));
   const place = PLACES.find(([re, who]) => who === id && re.test(t));
+  if (other) addGossip(other, id);
   if (place) line = place[2];
   else if (other && (key === "fallback" || key === "who")) line = MENTION[id](CH[other].ko);
   // 같은 감정 두 번 연속 (좋아한다는 말)
@@ -1024,13 +1051,109 @@ function replyTo(id, text) {
   }
   out.push(line);
   // 가끔 한 줄 더 덧붙이거나, 마키아·미노스는 가끔 "……"만
-  if (TAIL[id] && out.length === 1 && Math.random() < .18) out.push(TAIL[id]);
+  if (TAIL[id] && out.length === 1 && line !== TAIL[id] && Math.random() < .18) out.push(TAIL[id]);
   if ((id === "maquia" || id === "minos") && tier(id) === "cold" && Math.random() < .08) { out.length = 0; out.push("……"); }
   r.lastIntent = key; r.lastText = norm; save();
   // 읽고 한참 있다 답하는 때도 있다
   const wait = Math.random() < .15 ? rand(3000, 5000) : rand(700, 1400);
   return [out, wait];
 }
+/* -------------------------------------------------------------------
+   기억 · 소문 · 늦은 답장 · 오랜만 · 이름 · 사진
+   ------------------------------------------------------------------- */
+// 내가 한 말 중 나중에 다시 꺼낼 것
+const MEM_KEYS = [["thirst", /배고|목말|갈증/], ["fear", /무서|겁나|불안/], ["tired", /피곤|졸려|힘들|지쳐/], ["sick", /아파|아프|다쳤|다침/], ["hate", /싫어|하기\s?싫|짜증/]];
+const MEMBACK = {
+  jin: { thirst: ["아까 배고프다고 하셨죠.", "급식 기록이 아직 없습니다."], fear: ["아까 무섭다고 하신 건.", "……지금은 괜찮습니까."], tired: ["피곤하다고 하셨죠. 오늘 배정은 비워 뒀습니다."],
+    sick: ["다쳤다고 하신 곳, 제니스에게 넘겼습니다."], hate: ["싫다고 하신 건 기록하지 않았습니다.", "……이번만."] },
+  ruan: { thirst: ["아까 배고프다며.", "마셨냐."], fear: ["무섭다던 거.", "……아직이야?"], tired: ["피곤하다며. 자."], sick: ["아프다던 데. 어디야."], hate: ["아까 싫다던 거.", "하지 마. 진한테는 내가 말해."] },
+  jenis: { thirst: ["아까 갈증 얘기 하셨죠. 수치 확인했어요."], fear: ["무섭다고 하셨던 거요.", "지금은요?"], tired: ["피곤하다고 하셨죠. 철분 수치 때문일 수도 있어요."],
+    sick: ["다친 데, 사진 보내 주세요. 처치는 제가 해요."], hate: ["싫다고 하셨던 거, 안 해도 되는 방법 찾아볼게요."] },
+  rainer: { thirst: ["배고프다고 했죠. 뒷문 냉장고에 하나 넣어 뒀어요."], fear: ["아까 무섭다던 거.", "음… 오늘은 가게 2층에서 쉬다 가요."], tired: ["피곤하다면서요. 내일은 늦게 와요."],
+    sick: ["다쳤다면서요. 오늘 출근 안 해도 돼요."], hate: ["싫다던 거, 안 해도 돼요. 대신 컵은 닦고요."] },
+  anzi: { thirst: ["배고프다던 애가 조용하네. 마셨어?"], fear: ["무섭다던 거, 아직이야?", "……장난 아니고 묻는 거야."], tired: ["피곤하다며. 오늘은 아무것도 안 캐물을게."],
+    sick: ["다쳤다며. 어디서. 누구한테."], hate: ["싫다던 거 아직도 싫어? 흠, 고집 있네."] },
+  minos: { thirst: ["배고프다며. 사람 많은 데 가지 마라."], fear: ["무섭다던 거.", "……순찰 그쪽으로 돈다."], tired: ["피곤하다며. 자라."], sick: ["다쳤다며. 누가 그랬어."], hate: ["싫다던 거. 억지로 하지 마."] },
+  maquia: { thirst: ["……갈증 얘기를 했었지."], fear: ["무섭다고 했었지.", "……아직인가."], tired: ["쉬어라. 피곤하다고 했으니."], sick: ["다친 곳. 보여라."], hate: ["싫다고 했던 것.", "……기억해 두지."] },
+};
+// 다른 사람 얘기를 하면, 나중에 그 사람이 안다
+const GOSSIP = {
+  jin: n => [`${n}에게 제 얘기를 하셨다고요.`, "……정정할 부분은 없습니까."],
+  ruan: n => [`${n}한테 내 얘기 했냐.`, "……뭐라고 했는데."],
+  jenis: n => [`${n} 씨한테 제 얘기 하셨다면서요.`, "좋은 얘기였길 바라요."],
+  rainer: n => [`${n}한테 내 얘기 했다면서요.`, "음… 뭐라고 했는지는 안 물어볼게요."],
+  anzi: n => [`${n}한테 내 얘기 했지?`, "흠, 그 녀석 표정이 이상하더라."],
+  minos: n => [`${n}한테 내 얘기 했냐.`, "……쓸데없는 소리 하지 마라."],
+};
+function addGossip(to, from) {
+  if (!GOSSIP[to]) return;
+  ST.gossip = ST.gossip || [];
+  if (ST.gossip.some(g => g.to === to) || (REL(to).heard || []).includes(from)) return;
+  ST.gossip.push({ to, from, at: NOW() }); if (ST.gossip.length > 6) ST.gossip.shift(); save();
+}
+// 먼저 오는 메시지 중 특별한 것: 기억(8분~3일 뒤) → 소문(15분 뒤)
+function specialAmb(force) {
+  const A = ST.amb, okId = id => (force || NOW() - (A.each[id] || 0) >= AMB_GAP_EACH) && !(hasFx("case") && id === "jin");
+  for (const id of ORDER) {
+    const r = REL(id), m = r.mem;
+    if (m && okId(id) && NOW() - m.at >= 8 * 60000 && NOW() - m.at <= 3 * 864e5) { delete r.mem; return [id, MEMBACK[id][m.k]]; }
+    if (m && NOW() - m.at > 3 * 864e5) delete r.mem;
+  }
+  const g = (ST.gossip || []).find(g => okId(g.to) && NOW() - g.at >= 15 * 60000);
+  if (g) { ST.gossip = ST.gossip.filter(x => x !== g); const r = REL(g.to); (r.heard = r.heard || []).push(g.from); return [g.to, GOSSIP[g.to](CH[g.from].ko)]; }
+  return null;
+}
+// 바쁜 상태 — 자동 답장이 있으면 그 한 줄, 없으면 읽지도 않음
+const DEFER = {
+  ruan: { OFFLINE: null, "임무중": null }, jenis: { "회의중": "회의 중이에요. 끝나면 연락할게요." }, rainer: { "방해 금지": null },
+  anzi: { OFFLINE: null, "취재중": "취재 중. 이따." }, minos: { "현장 출동": "현장. 나중에." },
+  jin: { "방해 금지": "방해 금지 중입니다. 확인 후 회신하겠습니다.", "회의중": "회의 중입니다. 끝나고 회신합니다." },
+};
+const busyNow = id => DEFER[id] && CH[id].st in DEFER[id] ? { auto: DEFER[id][CH[id].st] } : null;
+const DEFER_OPEN = { jin: "확인했습니다. 늦었습니다.", ruan: "이제 봤다.", jenis: "끝났어요. 아까 말씀하신 거요.", rainer: "음, 이제 봤어요.", anzi: "왔어.", minos: "끝났다. 봤다." };
+const MANY = { jin: "메시지가 여러 건이네요.", ruan: "……몇 개를 보낸 거야.", jenis: "여러 개 보내셨네요. 마지막 것만 답할게요.", rainer: "음… 많이도 보냈네.", anzi: "흠, 나 없는 사이에 수다 떨었네.", minos: "……많이도 보냈네." };
+function deliverPending(id) {
+  const r = REL(id), p = r.pend; if (!p) return;
+  delete r.pend; save();
+  const [lines] = replyTo(id, p.last || "");
+  pushMsg(id, [DEFER_OPEN[id], ...(p.n >= 3 ? [MANY[id]] : []), ...lines]);
+}
+setInterval(() => ORDER.forEach(id => { const p = REL(id).pend; if (p && !busy && (!busyNow(id) || NOW() >= p.due)) deliverPending(id); }), 20000);
+// 며칠 만에 대화창을 열면
+const AWAY = { jin: d => `${d}일 만입니다.`, ruan: () => "어디 갔다 왔어.", jenis: d => `${d}일 동안 기록이 비었네요.`, rainer: () => "음… 오랜만이네요.",
+  anzi: d => `${d}일. 흠, 실종 기사 쓸 뻔했잖아.`, minos: () => "……살아 있었냐.", maquia: () => "……돌아왔군." };
+// 이름 부르기 (가까움부터)
+const CALL = { jin: (n, t) => t === "bond" ? `${n}.` : `${n} 씨.`, jenis: n => `${n} 씨.`, ruan: n => `${n}.`, rainer: n => `${n}.`, anzi: n => `${n}.`, minos: n => `${n}.`, maquia: n => `……${n}.` };
+// 다른 화면에서 내 이름이 나오면 (게시판 댓글)
+const BOARD_REACT = {
+  jin: ["게시판 로그 확인했습니다.", "제 이름은 빼 주십시오."], ruan: ["게시판에 내 얘기 쓴 거 너냐."],
+  jenis: ["언더럭스 게시판에 제 얘기가 있던데요.", "……쓴 사람이 당신이라니 흥미롭네요."], rainer: ["음, 게시판에 내 얘기 썼다면서요.", "가게 홍보는 고마워요."],
+  anzi: ["게시판 댓글 봤어.", "흠. 내 이름 들어가니까 다들 몰려들더라."], minos: ["게시판에 내 이름 올리지 마. 형사다."], maquia: ["……게시판.", "그 댓글, 지워지기 전에 봤다."],
+};
+function boardMention(t) {
+  const id = [...Object.keys(NAMES), "maquia"].find(k => (k === "maquia" ? /마키아/ : NAMES[k]).test(t));
+  if (!id || ST.once["bd_" + id]) return;
+  ST.once["bd_" + id] = true; save();
+  setTimeout(() => pushMsg(id, BOARD_REACT[id]), rand(20000, 40000));
+}
+// 각별함이 되면 사진 한 장 (이미지가 올라와 있을 때만 보낸다)
+const PHOTO = {
+  ruan: [["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]],
+  jenis: [["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]],
+  rainer: [["뉴올리언스 이웃이 보내 줬어요."], ["문 앞 화분, 아직 살아 있대요."]],
+  anzi: [["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]],
+  minos: [["끝났다. 다이너."], ["……네 자리 비어 있다."]],
+  jin: [["새로 들였어."], ["……같이 들을 거면 와."]],
+  maquia: [["네 차례다."], ["……서두를 필요는 없다."]],
+};
+function tryPhoto(id) {
+  const r = REL(id);
+  if (!PHOTO[id] || r.photo || tier(id) !== "bond") return;
+  const src = `../../photo/${id}.webp`, im = new Image();
+  im.onload = () => { if (r.photo) return; r.photo = true; save(); pushMsg(id, [...PHOTO[id][0], "IMG:" + src, ...PHOTO[id][1]]); };
+  im.src = src;
+}
+setTimeout(() => ORDER.forEach(id => tryPhoto(id)), 15000);
 function relLabel(id) { return `<span class="rel rel-${tier(id)}">관계 · ${TIER_KO[tier(id)]} ${aff(id)}</span>`; }
 function syncChatInput() {
   const on = !!cur && !busy;
@@ -1045,6 +1168,20 @@ $("#chatIn").onsubmit = async e => {
   const before = tier(id);
   CHAT[id].log.push(["me", text]); bubble("me", text); save();
   busy = true; syncChatInput();
+  // 바쁜 상태면 지금은 답하지 않고, 상태가 바뀌거나 몇 분 뒤에 답이 온다 (도와 달라는 말은 바로)
+  const bz = busyNow(id), r = REL(id);
+  if (bz && !(INTENTS.find(([k]) => k === "help")[1].test(text))) {
+    if (!r.pend) {
+      r.pend = { n: 0, due: NOW() + rand(3, 8) * 60000 };
+      await new Promise(res => setTimeout(res, 1500));
+      busy = false;
+      if (bz.auto) await say(id, [bz.auto]);
+      else { const p = document.createElement("p"); p.className = "bub sys"; p.textContent = "— 읽음 표시 없음 —"; $("#chatLog").appendChild(p); $("#chatLog").scrollTop = 1e6; }
+    }
+    r.pend.n++; r.pend.last = text; save();
+    busy = false; drawChoices(id); syncChatInput();
+    return;
+  }
   const [lines, wait] = replyTo(id, text);
   // 꺼져 있거나 바쁜 사람은 답이 더 늦다
   const slow = /OFFLINE|비공개|방해/.test(CH[id].st);
@@ -1448,7 +1585,7 @@ function renderUX() {
     i.oninput = () => { CM_DRAFT[k] = i.value; };
     f.onsubmit = e => {
       e.preventDefault(); const t = i.value.trim(); if (!t) return;
-      (ST.myCm = ST.myCm || {})[k] = { t, at: NOW(), re: [] }; delete CM_DRAFT[k]; save(); renderUX(); cmReact(k);
+      (ST.myCm = ST.myCm || {})[k] = { t, at: NOW(), re: [] }; delete CM_DRAFT[k]; save(); renderUX(); cmReact(k); boardMention(t);
     };
     if (k === fk) { i.focus(); try { i.setSelectionRange(fs, fs); } catch {} }
   });
@@ -1457,6 +1594,9 @@ function renderUX() {
     const k = b.dataset.nzok; ST.noiseOk = ST.noiseOk || {};
     if (ST.noiseOk[k]) delete ST.noiseOk[k]; else ST.noiseOk[k] = NOW();
     save(); renderUX();
+    // 처음 확인하면 크로니클(안지)이, 전부 확인하면 진이 알아챈다
+    if (ST.noiseOk[k] && !ST.once.nzFirst) { ST.once.nzFirst = true; save(); setTimeout(() => pushMsg("anzi", ["노이즈 필터 보고 있네.", "위험도는 내가 매긴 거야. 맞는 것 같아?"]), rand(8000, 15000)); }
+    const all = noisePosts(); if (all.length >= 5 && all.every(x => ST.noiseOk["n" + x.t]) && !ST.once.nzAll) { ST.once.nzAll = true; save(); setTimeout(() => pushMsg("jin", ["제보 확인 기록 봤습니다.", "신입치고 꼼꼼하네요."]), rand(8000, 15000)); }
   });
   // 산 정보 + 산 물건(같은 물건은 한 줄, 개수만 늘어남)을 최근 순으로
   const goods = MK_POOL.filter(m => !m.info && ST.bought[m.id]).map(m => {
