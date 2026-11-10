@@ -903,6 +903,85 @@ const TAIL = { jin: "……이상입니다.", ruan: "……암튼.", jenis: "음
 const RUDE_RE = /시발|씨발|ㅅㅂ|병신|ㅂㅅ|꺼져|닥쳐|미친놈|미친년|좆|개새|지랄/;
 const SHORT_RE = /^(ㅇㅇ|ㅇ|응|웅|ㅋ+|ㅎ+|ㄴㄴ|ㄱㄱ|넵|네|어|음+|\.+|…+)$/;
 
+// 첫 대화(선택지)가 끝난 직후, 그 말에 이어서 답하면 받아 주는 말
+// [조건, 답] — 조건이 null이면 아무 말에나 (단, 의도가 뚜렷한 말이면 건너뜀). 대화당 두 번까지, 같은 답은 한 번만
+const FOLLOW = {
+  jin: { shift: [
+    [/어디|위치|주소|가는\s?길/, ["다운타운입니다. 디바이스 지도에 찍어 두겠습니다."]],
+    [/싫|안\s?가|귀찮|가기\s?싫|빠지/, ["출근 기록은 대시보드에 남습니다.", "안 남으면 제가 확인 연락 드립니다."]],
+    [/위장|왜\s?(일|근무|출근)|꼭/, ["인간 사이에 섞여 사는 것도 규정입니다.", "§4. 하우스 규정 탭에 있습니다."]],
+    [null, ["네. 오늘은 여기까지입니다.", "궁금한 건 하우스 규정 탭부터 보세요. 거기 없으면 그때 물으시고요."]] ] },
+  ruan: {
+    care: [
+      [/마셨|다\s?먹|비웠|먹었/, ["……진짜?", "거짓말이면 냄새로 안다."]],
+      [/걱정|맞네|챙겨|귀엽|다정/, ["아니라고.", "……한 번 더 하면 차단한다."]],
+      [null, ["어.", "……됐으니까 마시기나 해."]] ],
+    self: [
+      [/눈앞|무슨\s?뜻|뭔\s?뜻|왜/, ["보이는 데 있으라고.", "……사고 치면 치우기 편하게. 그게 다야."]],
+      [/몇|치웠|죽였|누구/, ["세다 말았어.", "……궁금해하지 마."]],
+      [null, ["그래. 해 봐.", "……보고 있을게."]] ] },
+  jenis: {
+    no: [
+      [/협박|치사|너무|그런\s?게\s?어딨|무섭/, ["협박이라뇨. 일정 안내예요.", "……표현이 차가웠다면 사과할게요. 수치는 여전히 궁금하지만."]],
+      [/할게|알겠|해요|뽑아|해\s?드릴/, ["음, 마음 바뀌셨네요. 다행입니다.", "뉴욕에서 돌아가면 바로 연락드릴게요."]],
+      [null, ["후. 급할 거 없어요.", "갈증도 오르면 그때 얘기하죠."]] ],
+    yes: [
+      [/언제|며칠|몇\s?시/, ["이사회가 끝나야 해서요. 이번 주 안엔 돌아가요.", "날짜 잡히면 디바이스로 보낼게요."]],
+      [/아파|아프|무서|바늘|주사/, ["따끔한 정도예요. 알터 피부는 금방 아물고요."]],
+      [/결과|알려|이상|뭐가/, ["나오면 제일 먼저 알려 드릴게요.", "……좋은 쪽이든 아니든요."]],
+      [null, ["네. 그럼 그때 봬요.", "그사이 수치 너무 올리지 마시고요."]] ] },
+  rainer: {
+    try: [
+      [/선|넘으면|무슨\s?뜻|어떻게\s?되/, ["음… 궁금해요?", "궁금해하지 않는 편이 오래 일해요."]],
+      [/무서|안\s?웃|웃어/, ["지금은 웃고 있잖아요."]],
+      [null, ["그럼 내일 봐요. 열 시.", "늦으면 앞치마 제일 큰 거 줄 거예요."]] ],
+    blood: [
+      [/창고|지하|뭐가\s?있|뭐\s?있/, ["와인. 악보. 그런 거요.", "……그렇게 믿는 게 편할 거예요."]],
+      [/왜|열면|열어/, ["열면 알게 되겠죠.", "근데 그다음엔 여기서 일 못 해요."]],
+      [/웃|어떻게/, ["입꼬리만요. 눈은 안 웃어도 돼요.", "손님들은 그 차이 몰라요."]],
+      [null, ["그럼 내일 봐요. 열 시.", "늦으면 앞치마 제일 큰 거 줄 거예요."]] ] },
+  anzi: { hint: [
+    [/눌렀|눌러\s?봤|들어갔|뭐야\s?거기|열렸/, ["흠. 벌써? 손 빠르네."]],
+    [/어디|버전|번호|어떻게/, ["화면 제일 아래. HOUSE OS 어쩌고 하는 글자.", "세 번. 빠르게."]],
+    [/왜|비밀|진한테|진이/, ["진은 규정 좋아하잖아.", "이건 규정 밖이거든."]],
+    [/화|안\s?났|아니/, ["아니면 말고. 표정은 화났던데."]],
+    [null, ["흠. 반응 좋네.", "또 말 걸어. 심심할 때."]] ] },
+  minos: {
+    why: [
+      [/진\s?말고|진이|진은|왜\s?진/, ["진은 서류부터 쓴다.", "난 차부터 몬다."]],
+      [/알겠|그럴게|연락할/, ["그래. 번호 저장해 둬."]],
+      [null, ["……그래.", "이상한 거 보면, 바로."]] ],
+    stay: [
+      [/냄새|짙/, ["갈증 오른 알터 냄새.", "……사람 많은 데선 티 난다고."]],
+      [/언제|그럼|나중|지금은/, ["수치 내려가면.", "……생각해 본다고는 안 했다."]],
+      [null, ["쯧.", "그런 말은 수치 내리고 해."]] ] },
+  maquia: {
+    mean: [
+      [/숨기|안\s?숨|모르|뭘/, ["……그 대답도 기록에 남는다."]],
+      [/누구|당신|이름/, ["마키아.", "그거면 충분하다."]],
+      [null, ["……흠.", "다음엔 네가 먼저 말해라."]] ],
+    who: [
+      [/뭘|뭐를|봤다|기록/, ["네 기록.", "빈칸이 많더군."]],
+      [/필요|왜|언제|찾/, ["때가 되면.", "……그 전에 사라지지는 마라."]],
+      [null, ["…….", "기억해 둬라. 두 번 말하지 않는다."]] ] },
+};
+function followUp(id, t, norm) {
+  const s = CHAT[id], list = s.done && FOLLOW[id] && FOLLOW[id][s.node];
+  if (!list) return null;
+  const r = REL(id), f = r.fu = r.fu || { n: 0, used: [], last: "" };
+  if (f.n >= 2) return null;
+  // 그사이 다른 말(먼저 온 메시지 등)이 끼었으면 이어지는 대화가 아니다
+  const them = [...s.log].reverse().find(m => m[0] === "them");
+  const endLine = TALK[id][s.node].say.slice(-1)[0];
+  if (!them || (them[1] !== endLine && them[1] !== f.last)) return null;
+  const hit = INTENTS.find(([, re]) => re.test(t)), key = hit ? hit[0] : "fallback";
+  if (["help", "secret", "ux", "like"].includes(key)) return null; // 뚜렷한 용건은 원래 답으로
+  let i = list.findIndex(([re], k) => re && !f.used.includes(k) && re.test(t));
+  if (i < 0) { i = list.length - 1; if (f.used.includes(i) || !(key === "fallback" || key === "thanks" || SHORT_RE.test(norm) || norm.length <= 1)) return null; }
+  const lines = list[i][1];
+  f.used.push(i); f.n++; f.last = lines[lines.length - 1]; r.lastIntent = "follow"; save();
+  return lines;
+}
 // 답장 만들기 — [줄 목록, 기다리는 시간(ms)]
 function replyTo(id, text) {
   const r = REL(id), t = text.replace(/\s+/g, " ").trim(), norm = t.replace(/[\s.!?~]/g, "");
@@ -913,6 +992,8 @@ function replyTo(id, text) {
   // 같은 말 반복
   r.reps[norm] = (r.reps[norm] || 0) + 1;
   if (r.reps[norm] >= 3) { save(); return [[REP[id](r.reps[norm])], 900]; }
+  const fo = followUp(id, t, norm);
+  if (fo) return [fo, rand(900, 1600)];
   if (SHORT_RE.test(norm) || norm.length <= 1) return [[SHORT[id]], 1200];
 
   const hit = INTENTS.find(([, re]) => re.test(t)), key = hit ? hit[0] : "fallback";
@@ -1003,7 +1084,7 @@ const PAGES = {
     `<p class="cp-lead">코르부스 그룹은 해가 진 뒤에도 멈추지 않는 도시를 위해 일합니다. 호스피탈리티, 바이오, 특수 물류 — 세 개의 축으로 전 세계 12개 도시의 밤을 지탱합니다.</p>` +
     stat([["1906", "라스베이거스 창립"], ["12", "운영 도시"], ["24/7", "무휴 운영"], ["47년", "임원 평균 근속"]]) +
     sec("우리의 시작", "1906년, 라스베이거스 철도 부지의 작은 야간 화물 창고에서 시작했습니다. 낮에는 아무도 오지 않던 그 창고가, 지금의 코르부스입니다.") +
-    sec("우리의 원칙", "· <b>신뢰</b> — 고객의 비밀은 회사의 비밀입니다.<br>· <b>지속</b> — 우리는 오래 갑니다. 아주 오래.<br>· <b>질서</b> — 모든 직원은 정해진 규정 안에서 보호받습니다.") +
+    sec("우리의 원칙", "· <b>신뢰</b> — 고객의 비밀은 회사의 비밀입니다.<br>· <b>지속</b> — 오래 갑니다. 아주 오래.<br>· <b>질서</b> — 모든 직원은 정해진 규정 안에서 보호받습니다.") +
     sec("경영진", "코르부스의 경영진은 언론 노출을 최소화합니다. 이사회 명단은 주주에게만 공개되며, 창립자에 관한 문의는 받지 않습니다.")],
   hospitality: ["HOSPITALITY", "호텔 · 리조트 · 카페",
     `<p class="cp-lead">스트립의 카지노 호텔부터 다운타운의 부티크 카페까지. 코르부스 계열 매장은 손님이 잠들지 않는 시간에 가장 빛납니다.</p>` +
@@ -1018,7 +1099,7 @@ const PAGES = {
     sec("연구 협력", "제휴 제약사 연구소와 혈액 대사·장기 보존 분야를 공동 연구합니다. <small>연구 결과는 대외 비공개입니다.</small>") +
     sec("유의 사항", "코르부스는 일반 소비자에게 혈액 제품을 판매하지 않습니다. 개인 간 혈액 거래는 불법이며, 회사와 무관합니다.")],
   logistics: ["LOGISTICS", "야간 특수 물류",
-    `<p class="cp-lead">냉장 컨테이너 기반의 심야 배송 네트워크. 우리는 해가 뜨기 전에 도착합니다.</p>` +
+    `<p class="cp-lead">냉장 컨테이너 기반의 심야 배송 네트워크. 해가 뜨기 전에 도착합니다.</p>` +
     stat([["C-1~C-9", "운영 노선"], ["03:00~05:30", "운행 시간"], ["100%", "일출 전 도착률"]]) +
     sec("운영 방식", "모든 차량은 새벽 3시 이후 출발해 일출 전에 복귀합니다. 낮 시간대 배송은 운영하지 않습니다.") +
     sec("보안", "적재물 정보는 발송인과 수령인, 그리고 회사만 압니다. 차량 외부에는 최소한의 로고만 부착합니다.") +
@@ -1105,7 +1186,7 @@ const NEWS_BODY = {
 <p>불편을 드려 죄송합니다. 위층의 커피는 그대로입니다.</p>`,
 `<p><b>[라스베이거스=코르부스 커뮤니케이션실]</b> 코르부스 그룹 바이오 부문이 뉴욕 소재 제휴 제약사와 <b>정제 혈액의 장기 보존</b>에 관한 공동 연구에 착수했다.</p>
 <p>현재 일반적인 적혈구 제제의 보관 기한은 냉장 기준 약 42일이다. 이번 연구는 이를 <b>수년 단위</b>로 늘리는 것을 목표로 한다. 연구진은 "시간이 지나도 굳지 않고, 처음 채혈한 날과 똑같은 상태를 유지하는 혈액"을 만드는 것이 최종 목표라고 설명했다.</p>
-<p>제휴사 측 연구 책임자는 "예측할 수 없는 변수가 가장 위험하다. 우리는 공급이 끊기는 순간을 원천적으로 없애고 싶다"며 "필요한 사람에게, 필요한 만큼, 언제든 닿는 혈액이 목표"라고 말했다.</p>
+<p>제휴사 측 연구 책임자는 "예측할 수 없는 변수가 가장 위험하다. 공급이 끊기는 순간을 원천적으로 없애고 싶다"며 "필요한 사람에게, 필요한 만큼, 언제든 닿는 혈액이 목표"라고 말했다.</p>
 <p>연구 결과의 활용 범위를 묻는 질문에 그룹은 "<b>수혈 외의 용도는 검토하지 않는다</b>"고 짧게 답했다. 연구 결과는 학술지에 게재하지 않으며, 그룹 내부와 제휴사 사이에서만 공유된다.</p>
 <p>연구는 라스베이거스와 뉴욕의 연구소에서 동시에 진행된다. 두 연구소 모두 <b>야간 근무 연구원</b>을 상시 모집 중이다.</p>`,
 `<p><b>냉장 물류 C-7 노선 운행 시간 변경 안내</b></p>
@@ -1118,7 +1199,7 @@ const NEWS_BODY = {
 <p>캠페인은 매주 금요일 <b>저녁 8시부터 새벽 4시까지</b> 카지노 호텔 더 세이렌 별관에서 열린다. 낮에는 시간을 내기 어려운 야간 근무자와 관광객을 위해 일몰 이후로 시간을 정했다고 그룹은 설명했다.</p>
 <p>참여자 전원에게는 더 세이렌 야간 라운지 이용권이 주어진다. 채혈은 그룹이 직접 교육한 숙련 직원이 맡는다. 한 참여자는 "주사를 맞은 줄도 몰랐다. 끝나고 나니 이상하게 기분이 편안했다"고 말했다.</p>
 <p>그룹은 혈액형이 드물거나 혈액 상태가 특히 좋은 일부 참여자에게 <b>추가로 연락을 드릴 수 있다</b>고 안내했다. 연락은 대부분 늦은 밤에 간다.</p>
-<p>그룹 관계자는 "피는 사람을 살린다. 우리는 그 사실을 누구보다 잘 알고 있다"며 "한 사람의 피가 얼마나 귀한지, 앞으로도 오래 기억하겠다"고 말했다.</p>`,
+<p>그룹 관계자는 "피는 사람을 살린다. 그 사실을 누구보다 잘 알고 있다"며 "한 사람의 피가 얼마나 귀한지, 앞으로도 오래 기억하겠다"고 말했다.</p>`,
   ],
   en: [
 `<p><b>LAS VEGAS — Corvus Communications.</b> Corvus Group has published its <i>2026 Night Economy Report</i>, an analysis of how the Las Vegas night is spent.</p>
@@ -1170,13 +1251,13 @@ const UI = {
     none: "검색 결과가 없습니다.", noq: q => `'${q}'에 대한 검색 결과가 없습니다.`, dont: "……찾지 마십시오.", top: "↑ 맨 위로", more: "자세히 보기 →",
     biz: [["호텔 · 리조트 · 카페", "스트립의 카지노 호텔부터 다운타운의 부티크 카페까지. 24시간, 365일."], ["혈액 · 의약 공급망", "제휴 제약사와 함께 정제 혈액 제제의 안정적인 수급을 책임집니다."], ["야간 특수 물류", "냉장 컨테이너 기반 심야 배송 네트워크. 해가 뜨기 전에 도착합니다."]],
     contact: "문의: 코르부스 그룹 커뮤니케이션실 (야간 응대)",
-    f: { h: "지원서 제출", sub: "추천 없이도 지원은 받습니다. 검토는 저희가 알아서 합니다.", n: "이름", e: "이메일", fl: "희망 분야", m: "하고 싶은 말", np: "홍길동", mp: "밤에 강합니다. 피도 잘 봅니다.", btn: "지원서 보내기", note: "※ 이 지원서는 실제로 어디에도 전송되지 않고, 이 브라우저에만 저장됩니다.",
+    f: { h: "지원서 제출", sub: "추천 없이도 지원은 받습니다. 검토는 저희가 알아서 합니다.", n: "이름", e: "이메일", fl: "희망 분야", m: "하고 싶은 말", np: "홍길동", mp: "밤에 강합니다. 피도 잘 봅니다.", btn: "지원서 보내기", note: "※ 메시지가 어디로 갈지는 알 수 없습니다.",
       opts: ["호텔 · 카페 야간 서비스", "냉장 물류 운송 보조", "보안 · 현장 정리", "행정 · 디스패치"], done: "지원서가 접수되었습니다.", body: n => `${n} 님, 지원해 주셔서 감사합니다.<br>결과는 따로 안내하지 않습니다. <em>필요하면, 저희가 먼저 찾아갑니다.</em>`, hint: "이미 밤을 아는 분이라면, 입구는 첫 화면에 있습니다." } },
   en: { quick: ["Careers", "Investors", "Privacy Policy"], menu: ["About", "Hospitality", "Biotech", "Logistics", "Careers", "Newsroom", "Investors"],
     none: "No results found.", noq: q => `No results for “${q}”.`, dont: "……Stop looking.", top: "↑ Back to top", more: "Learn more →",
     biz: [["Hotels · Resorts · Cafés", "From casino hotels on the Strip to a boutique café downtown. 24 hours, 365 days."], ["Blood & Pharma Supply", "With partner pharmaceutical firms, we ensure a stable supply of refined blood products."], ["Night Specialty Logistics", "A refrigerated late-night delivery network. We arrive before sunrise."]],
     contact: "Inquiries: Corvus Group Communications (night desk)",
-    f: { h: "Submit an Application", sub: "We accept applications without referral. We'll review them our own way.", n: "Name", e: "Email", fl: "Position", m: "Message", np: "Jane Doe", mp: "I'm good at night. I don't mind blood.", btn: "Send Application", note: "※ This application is not actually sent anywhere. It is stored only in this browser.",
+    f: { h: "Submit an Application", sub: "We accept applications without referral. We'll review them our own way.", n: "Name", e: "Email", fl: "Position", m: "Message", np: "Jane Doe", mp: "I'm good at night. I don't mind blood.", btn: "Send Application", note: "※ We cannot tell you where your message will go.",
       opts: ["Hotel & café night service", "Refrigerated logistics assistant", "Security & site cleanup", "Administration & dispatch"], done: "Your application has been received.", body: n => `Thank you for applying, ${n}.<br>We do not announce results. <em>If we need you, we will find you first.</em>`, hint: "If you already know the night, the entrance is on the first page." } },
 };
 const MENU_KEYS = ["about", "hospitality", "biotech", "logistics", "careers", "news", "investors"];
@@ -1315,20 +1396,64 @@ function renderUX() {
   }).join("");
   $$("[data-buy]").forEach(b => b.onclick = () => buy(b.dataset.buy));
   const post = (x, k, noise) => {
-    const lk = parseInt(String(x.h || "♥ 3").replace(/\D/g, "")) + (ST.likes[k] || 0);
+    const lk = parseInt(String(x.h || "♥ 3").replace(/\D/g, "")) + (ST.likes[k] || 0) + ((ST.bump || {})[k] || 0);
+    const cms = noise ? x.cm : [...x.cm, ...((ST.liveCm || {})[k] || [])];
     return `
-    <div class="win post ${x.fresh ? "fresh" : ""}"><div class="ph"><b>${x.who}</b>${x.fresh ? '<em class="newp">NEW</em>' : ""}<button class="lk" data-like="${k}">♥ ${lk}</button></div>
+    <div class="win post ${x.fresh ? "fresh" : ""}" data-k="${k}"><div class="ph"><b>${x.who}</b>${x.fresh ? '<em class="newp">NEW</em>' : ""}<button class="lk" data-like="${k}">♥ ${lk}</button></div>
       <h4>${x.t}</h4><p>${x.p}</p>
-      <div class="cm">${x.cm.map(([w, t]) => `<div><b>${w}</b>${t}</div>`).join("")}</div>
+      <div class="cm">${cms.map(([w, t]) => `<div><b>${w}</b>${t}</div>`).join("")}</div>
       ${noise ? `<div class="risk">⚠ 노출 위험｜<b class="${x.risk[1]}">${x.risk[0]}</b> (${x.risk[2]})</div>` : ""}</div>`;
   };
-  $("#board").innerHTML = boardPosts().map((x, i) => post(x, "b" + x.t)).join("");
+  $("#board").innerHTML = `<p class="bd-live"><i></i>LIVE · 지금 <b id="bdOn">${$("#bdOn") ? $("#bdOn").textContent : rand(14, 26)}</b>명 보는 중</p>` + boardPosts().map((x, i) => post(x, "b" + x.t)).join("");
   $("#noise").innerHTML = NOISE_LOCAL.map(x => post(x, "n" + x.t, true)).join("");
   $("#intelList").innerHTML = ST.intel.length ? ST.intel.map(x => `
     <div class="win post"><div class="ph"><b>${x.who}</b><span>${new Date(x.at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
       <h4>${x.t}</h4><p class="rc-info">${x.info}</p></div>`).join("") : `<p class="noise-head">아직 산 정보가 없습니다. 매물 탭의 '정보'·'기밀' 항목을 사면 여기 쌓입니다.</p>`;
   $$("[data-like]").forEach(b => b.onclick = () => { const k = b.dataset.like; ST.likes[k] = (ST.likes[k] || 0) ? 0 : 1; save(); renderUX(); });
 }
+/* 게시판 실시간 — 게시판을 보고 있으면 댓글이 하나씩 달리고 공감 수가 오른다 (달린 댓글은 저장) */
+const LIVE_WHO = ["@bellhop", "@static", "@nightjar", "@watcher", "@gearhead", "@drape", "@ironmoth", "@velvet", "@ash_", "@gravelot"];
+const LIVE_ANY = ["ㄹㅇ", "↑ 이거 맞음", "출처는?", "나도 들었음", "그건 루머임", "이 글 서기장이 볼까 봐 무서움", "조용히 해. 이 채널 로그 남는다", "삭제 각",
+  "방금 디스패치실 지나왔는데 다들 이 얘기 중", "크로니클에 나오겠다 이거", "신입 이거 보고 있냐", "ㅋㅋㅋ 아니 이건 좀", "추천 누르고 감", "아 이 동네 오늘 왜 이래"];
+const LIVE_BY = {
+  "신입 들어왔다며": ["향 얘기 그만해 배고파진다", "벨 에포크 오늘 줄 섰더라 ㅋㅋ 구경 온 놈들", "루안이 공지 캡처해 갔다는 말이 있음"],
+  "프리몬트 쪽 사냥꾼 흔적": ["방금 그쪽 지나왔는데 경찰차 한 대 서 있음", "형사 하나가 혼자 탄피 줍고 있더라", "오늘은 다들 큰길로 다니자"],
+  "거처 암막 시공 끝": ["어디 업체임?", "암막 해도 오후 3시 빛은 새던데", "낮잠 된다는 말에 바로 결제함"],
+  "폭주 개체 한 달 넘기면": ["……이 글 아직 안 지웠냐", "기억 비는 거 진짜임. 내 동기가 그랬어", "신입 앞에선 하지 말자니까"],
+  "루안 디바이스 또 꺼져 있음": ["방금 켜졌다가 다시 꺼짐 ㅋㅋ", "S등급은 퇴근도 S급", "디스패치 네 번째 호출 들어감"],
+  "신입이 오늘 출근했대": ["앞치마 끈 ㅋㅋㅋㅋ", "사장님 웃는 거 봤으면 오늘 운 좋은 거임", "카페 앞에 기자 하나 어슬렁거림. 안지 아님?"],
+  "은탄 재고 도는 중": ["가격도 내려갔대. 더 무서움", "이번 주는 무조건 둘이 다니자", "@watcher 형 덕에 산다"],
+  "크로니클 이번 호 봤냐": ["사진 찍힌 거 C-7 트럭 맞음", "하우스가 안 막은 게 더 이상함", "안지는 다 계산하고 실음"],
+  "텀블러 2차 물량": ["검정만이면 의미 없잖아", "체온 유지 진짜 됨? 식으면 맛 없는데", "지난번 거 뚜껑 샜음"],
+  "마키아 봤다는 사람": ["……", "이 글 곧 사라질 듯", "나도 스친 적 있음. 그날 밤 잠 못 잠"],
+  "이어피스 써 봄": ["신입 이거 진짜 사라", "버스 탈 수 있게 됐다는 말에 울컥함", "대여로 먼저 써 봐. 매물 탭에 있음"],
+};
+function boardLive() {
+  const ok = $("#ux").classList.contains("on") && $("#ux-board").classList.contains("on");
+  setTimeout(boardLive, rand(7, 15) * 1000);
+  if (!ok) return;
+  const on = $("#bdOn"); if (on) on.textContent = Math.max(9, Math.min(48, +on.textContent + rand(-2, 3)));
+  const posts = $$("#board .post");
+  if (!posts.length) return;
+  const el = posts[Math.min(posts.length - 1, Math.random() < .55 ? rand(0, 1) : rand(0, posts.length - 1))], k = el.dataset.k;
+  ST.liveCm = ST.liveCm || {}; ST.bump = ST.bump || {};
+  // 공감만 오를 때도 있다
+  if (Math.random() < .35) { ST.bump[k] = (ST.bump[k] || 0) + 1; save(); const b = el.querySelector(".lk"); if (b) { b.textContent = b.textContent.replace(/\d+/, n => +n + 1); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } return; }
+  const mine = ST.liveCm[k] = ST.liveCm[k] || [];
+  if (mine.length >= 4) return;
+  const title = Object.keys(LIVE_BY).find(t => k.includes(t));
+  const said = new Set(mine.map(m => m[1]));
+  const pool = [...(title ? LIVE_BY[title] : []), ...(title ? LIVE_BY[title] : []), ...LIVE_ANY].filter(t => !said.has(t));
+  if (!pool.length) return;
+  const line = pick(pool), who = pick(LIVE_WHO), cm = el.querySelector(".cm");
+  const ty = document.createElement("div"); ty.className = "cm-typing"; ty.innerHTML = `<b>${who}</b>입력 중…`; cm.appendChild(ty);
+  setTimeout(() => {
+    ty.remove(); if (mine.some(m => m[1] === line) || mine.length >= 4) return;
+    mine.push([who, line]); save();
+    const d = document.createElement("div"); d.className = "cm-new"; d.innerHTML = `<b>${who}</b>${line}<small>방금</small>`; cm.appendChild(d);
+  }, rand(1400, 2600));
+}
+setTimeout(boardLive, 5000);
 function buy(id) {
   const m = MK_POOL.find(x => x.id === id), pack = id === "pack";
   if (ST.cr < m.pr) { toast(`잔액 부족 · 보유 ${ST.cr} CR / 필요 ${m.pr} CR · 디스패치 임무로 벌 수 있어요`); return; }
@@ -1451,7 +1576,12 @@ $("#toGate").onclick = $("#toGate2").onclick = e => { e.stopPropagation(); BGM.s
 // 공개 사이트에서 처음 무언가를 누르면 로비 음악이 깔린다 (끄면 다시 자동으로 켜지지 않음)
 let bgmUserOff = false;
 $$("[data-bgm]").forEach(b => b.onclick = e => { e.stopPropagation(); if (BGM.on) bgmUserOff = true; BGM.toggle(); });
-$("#front").addEventListener("click", () => { if (!BGM.on && !bgmUserOff && $("#front").classList.contains("on")) { BGM.setMode("corp"); BGM.start(); } });
+// 폰은 스와이프(스크롤)를 '누름'으로 치지 않아 소리를 켤 수 없다. 화면 아무 데나 톡 치면(touchend) 켜지게 한다
+const frontBgm = e => {
+  if (e.target.closest("[data-bgm], #toGate, #toGate2")) return; // BGM 버튼·포털 입구는 각자 처리
+  if (!BGM.on && !bgmUserOff && $("#front").classList.contains("on")) { BGM.setMode("corp"); BGM.start(); }
+};
+["click", "touchend"].forEach(ev => $("#front").addEventListener(ev, frontBgm, { passive: true }));
 if (ST.name) $("#pname").value = ST.name;
 $("#sync").onclick = async () => {
   const btn = $("#sync"); btn.disabled = true;
