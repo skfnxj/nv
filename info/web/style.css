@@ -684,3 +684,12 @@ html { scroll-behavior: smooth; }
 .bub.photo { padding: 4px; background: rgba(0,0,0,.25); }
 .bub.photo img { display: block; width: 100%; max-width: 240px; border-radius: 12px; cursor: zoom-in; }
 .modal.photo .ph-full { display: block; max-width: 100%; max-height: 80vh; margin: 0 auto; border-radius: 10px; }
+/* 음성 메시지 */
+.bub.voice { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; width: 240px; max-width: 78%; }
+.bub.voice .vplay { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(125,155,255,.6); background: rgba(125,155,255,.15); color: inherit; font-size: 11px; cursor: pointer; }
+.bub.voice .wave { display: flex; align-items: center; gap: 2px; height: 26px; }
+.bub.voice .wave i { flex: 1; min-width: 2px; border-radius: 2px; background: rgba(200,210,232,.3); transition: background .15s; }
+.bub.voice .wave i.on { background: #7d9bff; }
+.bub.voice .vdur { font-family: var(--mono); font-size: 11px; color: var(--faint); font-style: normal; }
+.bub.voice .vtx { grid-column: 1 / -1; display: none; padding-top: 6px; border-top: 1px dashed rgba(125,155,255,.3); font-size: 13.5px; opacity: .85; }
+.bub.voice.heard .vtx { display: block; }

@@ -24,7 +24,7 @@ function glitch() { const g = $("#glitch"); g.classList.remove("go"); void g.off
 
 /* ===================================================================
    BGM — 외부 파일 없이 WebAudio로 만드는 느와르 재즈 루프
-   하우스: 느린 마이너 9th 패드 + 워킹 베이스 + LP 잡음
+   하우스: 느린 마이너 9th 패드 + 워킹 베이스
    언더럭스: 더 어두운 코드 + 심장 박동
    =================================================================== */
 const BGM = {
@@ -114,7 +114,10 @@ const BGM = {
   },
   hz: m => 440 * Math.pow(2, (m - 69) / 12),
   init() {
-    const c = this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // latencyHint "playback": 폰에서 버퍼가 모자라 지직거리는 걸 줄인다
+    const AC = window.AudioContext || window.webkitAudioContext;
+    let c; try { c = new AC({ latencyHint: "playback" }); } catch (e) { c = new AC(); }
+    this.ctx = c;
     this.master = c.createGain(); this.master.gain.value = 0;
     const comp = c.createDynamicsCompressor();
     this.master.connect(comp); comp.connect(c.destination);
@@ -124,13 +127,9 @@ const BGM = {
     this.delay.connect(fb); fb.connect(this.delay);
     const wet = c.createGain(); wet.gain.value = .35;
     this.delay.connect(wet); wet.connect(this.master);
-    // LP 잡음 (계속 흐름)
+    // 브러시·해머용 짧은 잡음 재료 (계속 흐르던 LP 지직 소리는 폰 스피커에서 거슬려서 뺐다)
     const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * .012 + (Math.random() < .0006 ? (Math.random() - .5) * .6 : 0);
-    const n = c.createBufferSource(); n.buffer = buf; n.loop = true;
-    const nf = c.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = 2400; nf.Q.value = .6;
-    const ng = c.createGain(); ng.gain.value = .5;
-    n.connect(nf); nf.connect(ng); ng.connect(this.master); n.start();
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this.noiseBuf = buf;
   },
   pad(t, notes, dur, cutoff) {
@@ -151,7 +150,7 @@ const BGM = {
   },
   brush(t, vol) {
     const c = this.ctx, s = c.createBufferSource(); s.buffer = this.noiseBuf;
-    const f = c.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 6000;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 5000; f.Q.value = .7;
     const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0005, t + .12);
     s.connect(f); f.connect(g); g.connect(this.master); s.start(t, Math.random()); s.stop(t + .15);
   },
@@ -166,7 +165,8 @@ const BGM = {
     else this.pad(t, notes, barLen, this.mode === "ux" ? 650 : 1100);
     const walk = this.mode === "ux" ? [0, 0, 7, 0] : corp ? [0, 7, 12, 7] : [0, 7, 12, 10];
     walk.forEach((iv, i) => this.pluck(t + i * beat, root + 12 + iv, (i ? .22 : .32) * (corp ? .7 : 1), beat * .9));
-    for (let i = 0; i < 8; i++) if (i % 2) this.brush(t + i * beat / 2, corp ? .025 : .05); else if (i === 2 || i === 6) this.brush(t + i * beat / 2, corp ? .04 : .08);
+    // 브러시는 아주 옅게 (높은 쉬익 소리가 폰에선 지직거림처럼 들린다)
+    for (let i = 0; i < 8; i++) if (i % 2) this.brush(t + i * beat / 2, corp ? .008 : .015); else if (i === 2 || i === 6) this.brush(t + i * beat / 2, corp ? .012 : .025);
     if (corp) { // 코드음에서 고른 맑은 피아노 음을 한 마디에 서너 개, 위로 올라가는 모양으로
       const pick = [...notes].sort(() => Math.random() - .5).slice(0, rand(3, 4)).sort((a, b) => a - b);
       pick.forEach((m, k) => this.vibe(t + beat * (k + (k % 2 ? .5 : 0)), m + 12, .05));
@@ -181,7 +181,7 @@ const BGM = {
     if (this.on) return;
     this.on = true;
     this.master.gain.cancelScheduledValues(this.ctx.currentTime);
-    this.master.gain.linearRampToValueAtTime(.9, this.ctx.currentTime + 2);
+    this.master.gain.linearRampToValueAtTime(.75, this.ctx.currentTime + 2); // 너무 크면 폰 스피커가 찢어진다
     clearTimeout(this.timer); this.schedule(); this.sync();
   },
   stop() {
@@ -666,10 +666,42 @@ function bubble(who, text) {
     im.src = src; im.alt = "사진"; im.onload = () => { $("#chatLog").scrollTop = 1e6; };
     im.onclick = () => modal(`<img class="ph-full" src="${src}" alt="">`, "photo");
     p.appendChild(im);
-  } else p.textContent = text;
+  } else if (String(text).startsWith("VOICE:")) voiceBubble(p, text);
+  else p.textContent = text;
   $("#chatLog").appendChild(p); $("#chatLog").scrollTop = 1e6;
 }
-const shortTxt = t => String(t).startsWith("IMG:") ? "📷 사진" : t;
+const shortTxt = t => String(t).startsWith("IMG:") ? "📷 사진" : String(t).startsWith("VOICE:") ? "🎙 음성 메시지" : t;
+// "VOICE:캐릭터|대사" 는 음성 메시지. voice/<캐릭터>.mp3 가 있으면 그 소리를, 없으면 파형만 흐르고 받아쓰기가 뜬다
+function voiceBubble(p, text) {
+  const [vid, said] = text.slice(6).split("|"), sec = Math.max(4, Math.min(20, Math.round(said.length / 4)));
+  const heard = (ST.vh || {})[vid];
+  p.classList.add("voice"); if (heard) p.classList.add("heard");
+  let seed = said.length; const h = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  p.innerHTML = `<button class="vplay" aria-label="재생">▶</button><span class="wave">${Array.from({ length: 28 }, () => `<i style="height:${25 + Math.round(h() * 75)}%"></i>`).join("")}</span><em class="vdur">0:${String(sec).padStart(2, "0")}</em><span class="vtx"></span>`;
+  p.querySelector(".vtx").textContent = said;
+  const btn = p.querySelector(".vplay"), bars = [...p.querySelectorAll(".wave i")];
+  btn.onclick = () => {
+    if (p.classList.contains("playing")) return;
+    p.classList.add("playing"); btn.textContent = "❚❚";
+    const duck = BGM.on && BGM.master; if (duck) BGM.master.gain.setTargetAtTime(.2, BGM.ctx.currentTime, .3);
+    let t0 = performance.now(), len = sec * 1000, timer;
+    const done = () => {
+      clearInterval(timer); p.classList.remove("playing"); p.classList.add("heard"); btn.textContent = "▶";
+      bars.forEach(b => b.classList.remove("on"));
+      if (duck && BGM.on) BGM.master.gain.setTargetAtTime(.75, BGM.ctx.currentTime, .5);
+      (ST.vh = ST.vh || {})[vid] = true; save(); $("#chatLog").scrollTop = 1e6;
+    };
+    const run = () => { t0 = performance.now(); timer = setInterval(() => {
+      const k = Math.min(1, (performance.now() - t0) / len);
+      bars.forEach((b, i) => b.classList.toggle("on", i / bars.length < k));
+      if (k >= 1) done();
+    }, 80); };
+    const a = new Audio(`../../voice/${vid}.mp3`);
+    a.onloadedmetadata = () => { if (isFinite(a.duration)) len = a.duration * 1000; };
+    a.onended = done;
+    a.play().then(run).catch(run);
+  };
+}
 function openChat(id) {
   cur = id; const s = CHAT[id], c = CH[id], r = REL(id);
   s.unread = false;
@@ -689,14 +721,14 @@ async function say(id, lines) {
   busy = true; $("#chatChoices").innerHTML = ""; syncChatInput();
   for (const line of lines) {
     if (cur !== id || !$("#tab-msg").classList.contains("on")) { CHAT[id].log.push(["them", line]); CHAT[id].unread = cur !== id; continue; }
-    const ty = document.createElement("p"); ty.className = "typing"; ty.textContent = CH[id].ko + " 입력 중";
+    const ty = document.createElement("p"); ty.className = "typing"; ty.textContent = CH[id].ko + (String(line).startsWith("VOICE:") ? " 녹음 중" : " 입력 중");
     $("#chatLog").appendChild(ty); $("#chatLog").scrollTop = 1e6;
     // 가까워진 루안·미노스·마키아는 가끔 쓰다 지운다
     if (["ruan", "minos", "maquia"].includes(id) && TIER_N[tier(id)] >= 2 && line.length > 6 && Math.random() < .3) {
       await new Promise(r => setTimeout(r, 1000)); ty.remove();
       await new Promise(r => setTimeout(r, 1600)); $("#chatLog").appendChild(ty); $("#chatLog").scrollTop = 1e6;
     }
-    await new Promise(r => setTimeout(r, String(line).startsWith("IMG:") ? 1800 : 500 + Math.min(1600, line.length * 38)));
+    await new Promise(r => setTimeout(r, /^(IMG|VOICE):/.test(String(line)) ? 2200 : 500 + Math.min(1600, line.length * 38)));
     ty.remove();
     CHAT[id].log.push(["them", line]);
     if (cur === id) bubble("them", line); else CHAT[id].unread = true; // 그사이 다른 대화로 옮겼으면 그쪽 창에 찍지 않는다
@@ -835,7 +867,9 @@ function checkTierUp(id, before) {
   renderDevices();
   const m = MILESTONE[id] && MILESTONE[id][now];
   if (m) setTimeout(() => pushMsg(id, m, true), rand(4000, 8000));
-  if (now === "close" || now === "bond") setTimeout(() => tryPhoto(id), rand(25000, 40000));
+  // 익숙함: 사진(사물·풍경) · 가까움: 음성 메시지 · 각별함: 셀카
+  if (now === "close") setTimeout(() => tryVoice(id), rand(25000, 40000));
+  else setTimeout(() => tryPhoto(id), rand(25000, 40000));
 }
 const lvHour = () => +new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }) % 24;
 const pick = a => a[rand(0, a.length - 1)];
@@ -997,11 +1031,218 @@ function followUp(id, t, norm) {
   if (!them || (them[1] !== endLine && them[1] !== f.last)) return null;
   const hit = INTENTS.find(([, re]) => re.test(t)), key = hit ? hit[0] : "fallback";
   if (["help", "secret", "ux", "like"].includes(key)) return null; // 뚜렷한 용건은 원래 답으로
+  const kk = kwKey(t); if (kk && !["thanks", "where", "fun"].includes(kk)) return null;
   let i = list.findIndex(([re], k) => re && !f.used.includes(k) && re.test(t));
   if (i < 0) { i = list.length - 1; if (f.used.includes(i) || !(key === "fallback" || key === "thanks" || SHORT_RE.test(norm) || norm.length <= 1)) return null; }
   const lines = list[i][1];
   f.used.push(i); f.n++; f.last = lines[lines.length - 1]; r.lastIntent = "follow"; save();
   return lines;
+}
+/* -------------------------------------------------------------------
+   키워드 대사 — 사랑해·꿈·좋아해·관심·고마워·죽어·보고 싶어·어디야·키스·뽀뽀·껴안기·심심·재밌다·나랑 하자·목말라·위험해·너 갈증도
+   lo = 경계·익숙함, hi = 가까움·각별함. 한 줄은 문자열, 여러 줄은 배열, 함수면 상황(c)을 받아 만든다
+   c = { me: 내 갈증도, th: 상대 갈증도, loc: 상대 위치, st: 상대 상태 }
+   ------------------------------------------------------------------- */
+const KW_RE = [
+  ["theirth", t => /갈증|수치|TH/i.test(t) && /높|왜\s?(이리|이렇게|그렇게)|많이\s?올/.test(t) && !/(내|나|제|난)\s?(갈증|수치)/.test(t)],
+  ["risky", /(너|넌|당신|그쪽|니가|네가)\s?(좀|진짜|되게|너무|참|꽤)?\s?위험/],
+  ["danger", /위험해|위험하다|위험한\s?상황|살려|(나|난|내가)\s?죽어|죽겠|죽을\s?것\s?같/],
+  ["die", /죽어|죽을래|뒤질래|뒤져/],
+  ["love", /사랑/],
+  ["dream", /꿈\s?(꿔|꿀|꾸)|꿈에\s?(나와|와|나타)/],
+  ["miss", /보고\s?싶/],
+  ["like", /좋아\s?해|좋아한|좋아함/],
+  ["interest", /관심\s?(있|가|생)/],
+  ["kiss", /키스|입\s?맞/],
+  ["peck", /뽀뽀/],
+  ["hug", /껴안|안아\s?(줘|줄|봐|도|주)|포옹|허그|안기고/],
+  ["lets", /나랑\s?(하자|해|할래)/],
+  ["bored", /심심|놀아\s?(줘|주)|놀자/],
+  ["fun", /재밌|재미있|즐거|신나/],
+  ["parched", /목말|목\s?말라|갈증\s?(나|난|심|올라)/],
+  ["thanks", /고마|감사|땡큐|ㄱㅅ/],
+  ["where", /어디(야|니|냐|임|에\s?있|있어|예요|세요|인데)/],
+];
+const kwKey = t => { const h = KW_RE.find(([, re]) => typeof re === "function" ? re(t) : re.test(t)); return h ? h[0] : null; };
+const LOC = c => /비공개|없음|권한/.test(c.loc || "") ? "" : String(c.loc).split(" · ")[0];
+const KW = {
+  love: {
+    jin: { lo: ["……업무 채널에서 그 단어는 곤란합니다.", "못 본 걸로 하겠습니다."], hi: ["……나도.", "여기 말고, 얼굴 보고 다시 해."] },
+    ruan: { lo: ["……미쳤냐.", "농담이면 지금 취소해."], hi: ["……알아.", "그 말은 한 번만 해. 버릇 된다."] },
+    jenis: { lo: "음. 그 단어는 아직 데이터가 부족해요.", hi: ["……저도요.", "이건 계산 안 하고 하는 말이에요."] },
+    rainer: { lo: "음… 그런 말은 아무한테나 하는 거 아니에요.", hi: ["알아요.", "그러니까 어디 가지 마요."] },
+    anzi: { lo: "흠. 그거 헤드라인으로 써도 돼?", hi: ["……이번엔 안 받아칠게.", "나도."] },
+    minos: { lo: "……술 마셨냐.", hi: ["……어.", "나도. 두 번은 안 한다."] },
+    maquia: { lo: "……그 말의 근거는.", hi: ["……들었다.", "잊지 않겠다."] },
+  },
+  dream: {
+    jin: { lo: "꿈 내용까지 지시하실 권한은 없습니다.", hi: "……알터는 꿈 잘 안 꿔. 꾸면 말해 줄게." },
+    ruan: { lo: "꿈에서까지 보기 싫은데.", hi: "……어제 꿨어. 묻지 마." },
+    jenis: { lo: "꿈은 통제 변수가 아니에요.", hi: "노력해 볼게요. 자기 전에 이 대화 다시 읽으면 되려나." },
+    rainer: { lo: "음… 악몽이면 어떡하려고요.", hi: "좋아요. 꿈에서도 가게 문 열어 둘게요." },
+    anzi: { lo: "흠. 네 꿈 꾸면 기삿거리라도 나와?", hi: "꿔 줄게. 내용은 비밀." },
+    minos: { lo: "……잠도 제대로 못 자는 놈한테.", hi: "……자면 꾸겠지. 잘 시간이 없어서 그렇지." },
+    maquia: { lo: "……꿈은 고르는 게 아니다.", hi: "……이미 꿨다." },
+  },
+  like: {
+    jin: { lo: "……기록에서는 빼 드리겠습니다.", hi: "……나도 싫진 않아. 이건 기록 안 남겨." },
+    ruan: { lo: "뭘 좋아해. 나를? ……취향 이상하네.", hi: "……알아. 티 나." },
+    jenis: { lo: "음, 좋아한다는 근거가 궁금하네요.", hi: "저도 좋아해요. 생각보다 많이요." },
+    rainer: { lo: "음… 커피 맛 때문이죠?", hi: "알아요. 나도 숨길 생각 없어요." },
+    anzi: { lo: "흠, 나 좋아하는 사람 많아. 줄 서.", hi: "……그런 말은 반칙이야. 받아칠 말이 안 떠오르잖아." },
+    minos: { lo: "……사람 잘못 봤다.", hi: "……어. 나도." },
+    maquia: { lo: "……흥미롭군. 이유는 묻지 않겠다.", hi: "……알고 있다. 네 쪽이 먼저였다는 것도." },
+  },
+  interest: {
+    jin: { lo: "관심은 업무 쪽으로 두십시오.", hi: "……나한테? 서류 말고?" },
+    ruan: { lo: "관심 끄고 살아. 편해.", hi: "……그럼 계속 둬. 끄지 말고." },
+    jenis: { lo: "관찰은 제 일인데, 반대가 됐네요.", hi: "다행이에요. 저만 그런 줄 알았거든요." },
+    rainer: { lo: "음… 관심은 받는 쪽이 더 재밌는데.", hi: "알아요. 눈에 다 보여요." },
+    anzi: { lo: "흠. 구경꾼을 구경하겠다고?", hi: "좋아. 그럼 오늘부터 서로 취재하는 걸로." },
+    minos: { lo: "……수사 대상한테 할 말은 아니군.", hi: "……알았다. 나도 너 신경 쓰인다." },
+    maquia: { lo: "……관심은 위험하다. 양쪽 다.", hi: "……나도 너를 보고 있다. 처음부터." },
+  },
+  thanks: {
+    jin: { lo: "업무입니다. 감사는 필요 없습니다.", hi: "……응. 그 말 들으려고 한 건 아니야." },
+    ruan: { lo: "됐어. 말로 하지 마.", hi: "……어. 다음에도 불러." },
+    jenis: { lo: "별말씀을요. 기록해 둘게요, 감사 1회.", hi: "고맙다는 말, 당신한테 들으면 좀 다르네요." },
+    rainer: { lo: "음, 착하네요.", hi: "음… 그 말이면 충분해요." },
+    anzi: { lo: "흠. 고맙다는 말은 언제 들어도 좋아.", hi: "……그런 말 자꾸 하면 나 착한 줄 알아." },
+    minos: { lo: "됐다.", hi: "……어. 다음엔 다치기 전에 불러." },
+    maquia: { lo: "……기억해 두지.", hi: "……그 말은 처음 듣는군. 나쁘지 않다." },
+  },
+  die: {
+    jin: { lo: "업무 채널입니다. 그런 말은 삼가십시오.", hi: "……기분 나쁜 일 있었어? 무슨 일인지부터 말해." },
+    ruan: { lo: "해 봐. 네가 먼저 죽는다.", hi: "……그런 말 너한테 듣기 싫다." },
+    jenis: { lo: "알터는 그렇게 쉽게 안 죽어요. 실험해 볼까요?", hi: "……농담이죠? 표정이 안 보여서요." },
+    rainer: { lo: "음… 무서워라.", hi: "그런 말은 화났을 때만 해요. 지금 화났어요?" },
+    anzi: { lo: "오, 살벌하네. 인용해도 돼?", hi: "흠. 오늘 뭐 있었어? 말해 봐. 다 들어 줄게." },
+    minos: { lo: "협박이냐. 기록한다.", hi: "……무슨 일 있었냐." },
+    maquia: { lo: "……그 말을 한 자는 많았다.", hi: "……네 입에서 나오니 이상하군." },
+  },
+  miss: {
+    jin: { lo: "업무 시간에 디스패치실로 오시면 됩니다.", hi: "……나도. 오늘 일 일찍 끝낼게." },
+    ruan: { lo: "……얼굴 보면 할 말도 없잖아.", hi: ["……어디야.", "가면 되잖아."] },
+    jenis: { lo: "뉴욕에서 돌아가면 수치 재러 갈게요. 그때 보죠.", hi: "저도요. 이사회 내내 그 생각만 했어요." },
+    rainer: { lo: "가게로 와요. 열 시까지 열어요.", hi: "음… 문 닫고 기다릴게요. 와요." },
+    anzi: { lo: "편집국으로 와. 문 열려 있어.", hi: "……나도. 장난 아니고." },
+    minos: { lo: "……순찰 끝나면 지나가 볼 수는 있다.", hi: "……지금 간다. 문 열어 둬." },
+    maquia: { lo: "……보는 건 내가 정한다.", hi: "……오늘 밤, 공원 숲길." },
+  },
+  // 디바이스에 뜬 지금 위치로 답한다
+  where: {
+    jin: { lo: c => LOC(c) ? `${LOC(c)}. 용건만 말씀하세요.` : "위치는 비공개입니다.", hi: c => LOC(c) ? [`${LOC(c)}.`, "……데리러 갈까?"] : "……회의 중. 끝나면 연락할게." },
+    ruan: { lo: c => LOC(c) ? `${LOC(c)}. 알아서 뭐 하게.` : "알아서 뭐 하게.", hi: c => LOC(c) ? `${LOC(c)}. ……오려면 와.` : ["신호 꺼 놨다.", "……너한테만 말할게. 스트립 외곽."] },
+    jenis: { lo: c => LOC(c) ? `지금 ${LOC(c)}. 업무 중이에요.` : "그건 비공개예요.", hi: c => LOC(c) ? `${LOC(c)}. 오시면 시간 낼게요.` : ["비공개인데……", "당신한텐 말할게요. 라스베이거스예요."] },
+    rainer: { lo: c => LOC(c) ? `${LOC(c)}. 손님 받는 중이에요.` : "음… 비밀.", hi: c => LOC(c) ? `${LOC(c)}. 와요, 자리 있어요.` : "음… 와요. 뒷문으로." },
+    anzi: { lo: c => LOC(c) ? `${LOC(c)}. 왜, 제보할 거 있어?` : "흠. 그건 오프 더 레코드.", hi: c => LOC(c) ? `${LOC(c)}. 와. 구경시켜 줄게.` : "……너한텐 말해 줄게. 편집국 옥상." },
+    minos: { lo: c => LOC(c) ? `${LOC(c)}. 근무 중이다.` : "비번이다. 위치는 말 안 해.", hi: c => LOC(c) ? `${LOC(c)}. ……필요하면 간다.` : "집. ……올 거냐." },
+    maquia: { lo: "……알 필요 없다.", hi: "……네 근처." },
+  },
+  kiss: {
+    jin: { lo: "……업무 채널에서 그런 단어는 삭제 대상입니다.", hi: "……여기서 말고." },
+    ruan: { lo: "……미쳤냐. 정신 차려.", hi: "……말로 하지 마. 그런 건." },
+    jenis: { lo: "음. 동의서부터 받아야겠네요.", hi: "……이건 문자로 대답할 질문이 아니네요." },
+    rainer: { lo: "음… 그런 건 문 닫은 다음에 물어요.", hi: "와요. 대답은 그때." },
+    anzi: { lo: "흠. 특종이다. 근데 안 써 줄게.", hi: "……그런 건 묻는 거 아니야. 와서 해." },
+    minos: { lo: "……정신 차려.", hi: "……디바이스로 할 소리냐. 와." },
+    maquia: { lo: "……대담하군.", hi: "……가까이 와서 다시 말해라." },
+  },
+  peck: {
+    jin: { lo: "……그 단어, 이 채널에서 처음 봅니다.", hi: "……애도 아니고. ……이따가." },
+    ruan: { lo: "애냐.", hi: "……한 번만이다." },
+    jenis: { lo: "귀여운 단어를 쓰시네요.", hi: "……볼에요? 그럼 괜찮아요." },
+    rainer: { lo: "음… 귀여워라.", hi: "볼 대 줄게요. 오면." },
+    anzi: { lo: "흠, 뽀뽀? 나 몇 살로 보여?", hi: "……볼에만 해. 아니, 아무 데나." },
+    minos: { lo: "……뭐?", hi: "……쯧. 이리 와." },
+    maquia: { lo: "……그 단어는 너와 어울리는군.", hi: "……허락하지." },
+  },
+  hug: {
+    jin: { lo: "물리적 접촉은 규정 외입니다.", hi: "……와. 잠깐이면 돼." },
+    ruan: { lo: "붙지 마.", hi: "……와. 오래는 안 해." },
+    jenis: { lo: "음, 체온 재는 거면 몰라도요.", hi: "네. 돌아가면 제일 먼저요." },
+    rainer: { lo: "음… 앞치마 벗고 와요.", hi: "와요. 오늘은 놔 달라고 해도 안 놔요." },
+    anzi: { lo: "흠. 너 오늘 무슨 일 있었구나.", hi: "와. 말 안 해도 돼." },
+    minos: { lo: "……무슨 일 있었냐.", hi: "……어. 이리 와." },
+    maquia: { lo: "……내 체온은 낮다. 그래도인가.", hi: "……잠깐만이다." },
+  },
+  bored: {
+    jin: { lo: "디스패치 탭에 열린 임무가 있습니다.", hi: "……일 끝나면 놀아 줄게. 조금만 기다려." },
+    ruan: { lo: "나한테 왜 말해.", hi: "……바이크 타러 갈래." },
+    jenis: { lo: "그럼 수치 측정이나 할까요? 농담이에요.", hi: "저도요. 이사회 너무 길어요. 얘기해요." },
+    rainer: { lo: "가게 오면 컵 닦게 해 줄게요.", hi: "피아노 칠 줄 알아요? 가르쳐 줄게요." },
+    anzi: { lo: "흠. 언더럭스 게시판 구경해. 오늘 재밌는 거 많아.", hi: "나도 심심했어. 뭐 할래, 말만 해." },
+    minos: { lo: "……난 바쁘다.", hi: "……순찰 같이 돌래. 차 안에서 얘기나 하자." },
+    maquia: { lo: "……심심함은 나쁜 결정의 시작이다.", hi: "……체스판 펴 두겠다." },
+  },
+  fun: {
+    jin: { lo: "즐거우시다니 다행입니다.", hi: "……나도. 오랜만이야, 이런 거." },
+    ruan: { lo: "뭐가.", hi: "……그래. 나도 나쁘지 않았다." },
+    jenis: { lo: "즐거움도 수치에 영향을 줘요. 좋은 쪽으로요.", hi: "저도요. 이런 건 기록 안 할래요." },
+    rainer: { lo: "음, 다행이네요.", hi: "그 말 들으려고 하는 거예요." },
+    anzi: { lo: "흠. 그치? 이 도시 재밌지.", hi: "너랑 있으면 기삿거리가 안 떨어져." },
+    minos: { lo: "……뭐가 재밌냐.", hi: "……그래. 다행이다." },
+    maquia: { lo: "……흠. 너는 쉽게 즐거워하는군.", hi: "……나도 그렇다. 이상하게." },
+  },
+  lets: {
+    jin: { lo: "무엇을 말씀이십니까. 구체적으로.", hi: "……뭘. 말 끝까지 해." },
+    ruan: { lo: "뭘 해.", hi: "……뭘 하자는 건지 말해. 그럼 생각해 볼게." },
+    jenis: { lo: "주어와 목적어가 빠졌네요.", hi: "음, 뭘요? ……대충 알 것 같지만." },
+    rainer: { lo: "음… 뭘요? 설거지?", hi: "뭘 하든 좋아요. 당신이 하자면." },
+    anzi: { lo: "흠. 뭘? 말 흐리면 내 마음대로 해석한다.", hi: "좋아. 뭔지는 몰라도." },
+    minos: { lo: "……뭘.", hi: "……말 똑바로 해라. 오해한다." },
+    maquia: { lo: "……무엇을.", hi: "……좋다. 네가 정해라." },
+  },
+  // 내 갈증도(c.me)
+  parched: {
+    jin: { lo: c => `현재 ${c.me}%. 거처 보관함 확인하세요. 비었으면 보고하시고요.`, hi: c => `${c.me}%. ……몇 팩 남았어? 없으면 내가 보낼게.` },
+    ruan: { lo: c => `${c.me}? 마셔. 지금.`, hi: c => [`${c.me}.`, "……참지 마. 참으면 내가 화난다."] },
+    jenis: { lo: c => `${c.me}%. 팩 하나 바로 드세요. 기록은 제가 할게요.`, hi: c => `${c.me}%……. 그냥 지금 드세요. 걱정돼요.` },
+    rainer: { lo: c => `음… ${c.me}%. 가게 오기 전에 해결하고 와요.`, hi: c => `${c.me}%? 와요. 냉장고에 하나 있어요.` },
+    anzi: { lo: c => `${c.me}? 흠, 표정 관리 잘해. 사람들 보고 있어.`, hi: c => `${c.me}. ……농담 안 할게. 지금 마셔.` },
+    minos: { lo: c => `${c.me}. 사람 많은 데 피해라.`, hi: c => `${c.me}……. 어디냐. 갖다 줄게.` },
+    maquia: { lo: c => `${c.me}. ……참는 법부터 배워라.`, hi: c => `${c.me}. ……무리하지 마라.` },
+  },
+  danger: {
+    jin: { lo: "위치 보내세요. 디스패치 연결합니다.", hi: "어디야. 지금 갈게. 끊지 마." },
+    ruan: { lo: "어디야.", hi: "말하지 마. 위치만. 간다." },
+    jenis: { lo: "어디세요? 다쳤으면 지혈부터 하세요.", hi: "거기 있어요. 바로 가요." },
+    rainer: { lo: "벨 에포크로 와요. 뒷문 열게요.", hi: "움직이지 마요. 내가 가요." },
+    anzi: { lo: "……어디야. 농담 아니면.", hi: "위치 찍어. 지금." },
+    minos: { lo: "위치. 출발한다.", hi: "버텨. 사이렌 켰다." },
+    maquia: { lo: "……어디.", hi: "……숨어 있어라. 간다." },
+  },
+  // "너 위험해"
+  risky: {
+    jin: { lo: "위험 등급은 C입니다. 공식 기록상.", hi: "……너한텐 아니야." },
+    ruan: { lo: "이제 알았냐.", hi: "……알면서 왜 계속 연락해." },
+    jenis: { lo: "위험한 건 제 연구 쪽이죠.", hi: "당신한텐 안 그래요. 약속해요." },
+    rainer: { lo: "음… 다들 그러더라고요.", hi: "알면서 왔잖아요." },
+    anzi: { lo: "흠, 칭찬으로 들을게.", hi: "위험한 거 좋아하잖아, 너." },
+    minos: { lo: "……알면 거리 둬라.", hi: "……그래도 오잖아, 너." },
+    maquia: { lo: "……정확한 판단이다.", hi: "……그래도 도망치지 않는군." },
+  },
+  // 디바이스 탭에서 상대 갈증도(c.th)를 보고 묻는 말 — 마키아는 수치가 비공개
+  theirth: {
+    jin: { lo: c => `${c.th}%. 정상 범위입니다. 제 수치는 신경 쓰지 마십시오.`, hi: c => [`${c.th}%……. 보고 있었어?`, "서류 때문에 좀 못 마셨어. 오늘 챙길게."] },
+    ruan: { lo: c => `${c.th}? 남의 거 보지 마.`, hi: c => ["……봤냐.", `${c.th}면 괜찮아. 신경 꺼.`] },
+    jenis: { lo: c => `${c.th}%. 출장 중이라 일정이 꼬여서요.`, hi: c => [`${c.th}%까지 봤어요?`, "……걱정해 주는 거죠. 오늘 챙겨 먹을게요."] },
+    rainer: { lo: c => `음… ${c.th}%? 가게 일이 바빠서요.`, hi: c => `${c.th}%. 음… 걱정해 주는 거 좋네요.` },
+    anzi: { lo: c => `${c.th}? 흠, 남의 디바이스 훔쳐보는 취미 있네.`, hi: c => [`${c.th}면 양호한 거야.`, "……근데 봐 줘서 고마워."] },
+    minos: { lo: c => `${c.th}. ……원래 그렇다. 신경 쓰지 마.`, hi: c => `${c.th}. ……너 앞에선 안 넘는다.` },
+    maquia: { lo: "……그 칸은 비어 있을 텐데.", hi: "……내 수치를 보려 했나. 대담하군." },
+  },
+};
+// 원래 답(TIERED·REPLY)이 있는 키워드는, 같은 단계에서 또 쓰면 두 번에 한 번은 원래 답으로 돌린다 (같은 말 되풀이 방지)
+const KW_BASE = { love: "like", like: "like", miss: "like", thanks: "thanks", danger: "help", parched: "thirst" };
+function kwLine(id, key) {
+  const set = KW[key] && KW[key][id]; if (!set) return null;
+  const r = REL(id), band = TIER_N[tier(id)] >= 2 ? "hi" : "lo", tag = key + band;
+  r.kw = r.kw || {}; const n = r.kw[tag] = (r.kw[tag] || 0) + 1; save();
+  if (n % 2 === 0 && KW_BASE[key]) return null;
+  let v = set[band];
+  if (typeof v === "function") v = v({ me: ST.th, th: CH[id].th, loc: CH[id].loc, st: CH[id].st });
+  return Array.isArray(v) ? v : [v];
 }
 // 답장 만들기 — [줄 목록, 기다리는 시간(ms)]
 function replyTo(id, text) {
@@ -1020,17 +1261,21 @@ function replyTo(id, text) {
   if (fo) return [fo, rand(900, 1600)];
   if (SHORT_RE.test(norm) || norm.length <= 1) return [[SHORT[id]], 1200];
 
-  const hit = INTENTS.find(([, re]) => re.test(t)), key = hit ? hit[0] : "fallback";
+  const hit = INTENTS.find(([, re]) => re.test(t)), kk = kwKey(t);
+  const key = kk && KW_BASE[kk] ? KW_BASE[kk] : hit ? hit[0] : "fallback";
   // 가까워지면 가끔 이름을 부른다
   if (ST.name && TIER_N[tier(id)] >= 2 && key !== "bye" && NOW() - (r.nameAt || 0) > 5 * 60000 && Math.random() < .22) { out.push(CALL[id](ST.name, tier(id))); r.nameAt = NOW(); }
   // 갈증도가 높으면 먼저 그 얘기부터
-  if (ST.th >= 80 && key !== "thirst" && Math.random() < .4) out.push(pick(REPLY[id].thirst)(ST.th));
+  if (ST.th >= 80 && key !== "thirst" && kk !== "theirth" && Math.random() < .4) out.push(pick(REPLY[id].thirst)(ST.th));
   let line;
+  // 키워드 대사 (같은 감정을 연달아 말한 때는 아래 AGAIN_LIKE가 받는다)
+  const kl = kk && !(key === "like" && r.lastIntent === "like") ? kwLine(id, kk) : null;
   // 다른 사람 이름 · 장소를 집어서 받아치기
   const other = Object.keys(NAMES).find(k => k !== id && NAMES[k].test(t));
   const place = PLACES.find(([re, who]) => who === id && re.test(t));
   if (other) addGossip(other, id);
-  if (place) line = place[2];
+  if (kl) { out.push(...kl.slice(0, -1)); line = kl[kl.length - 1]; }
+  else if (place) line = place[2];
   else if (other && (key === "fallback" || key === "who")) line = MENTION[id](CH[other].ko);
   // 같은 감정 두 번 연속 (좋아한다는 말)
   else if (key === "like" && r.lastIntent === "like") line = AGAIN_LIKE[id];
@@ -1138,19 +1383,38 @@ function boardMention(t) {
 }
 // 사진 메시지 (이미지가 올라와 있을 때만 보낸다)
 // 루안·제니스·미노스는 가까움에 찍은 것, 각별함에 셀카. 나머지는 각별함에 한 장
+// 익숙함(30): 사물·풍경 사진 / 각별함(85): 셀카. 파일이 아직 없으면 올라올 때까지 기다린다
 const PHOTO = {
-  ruan: { close: ["ruan", ["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]], bond: ["ruan2", ["어디냐고 물어볼까 봐."], ["……여기."]] },
-  jenis: { close: ["jenis", ["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]], bond: ["jenis2", ["편지 대신이에요."], ["……한 줄은 썼어요."]] },
-  minos: { close: ["minos", ["끝났다. 다이너."], ["……네 자리 비어 있다."]], bond: ["minos02", ["……이렇게 찍는 거 맞냐."], ["지우지 마라."]] },
-  rainer: { bond: ["rainer", ["뉴올리언스 왔어요. 비 와요."], ["문 앞 화분, 아직 살아 있더라고요."]] },
-  anzi: { bond: ["anzi", ["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]] },
-  jin: { bond: ["jin", ["새로 들였어."], ["……같이 들을 거면 와."]] },
-  maquia: { bond: ["maquia", ["네 차례다."], ["……서두를 필요는 없다."]] },
+  ruan: { warm: ["ruan", ["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]], bond: ["ruan2", ["어디냐고 물어볼까 봐."], ["……여기."]] },
+  jenis: { warm: ["jenis", ["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]], bond: ["jenis2", ["편지 대신이에요."], ["……한 줄은 썼어요."]] },
+  minos: { warm: ["minos", ["끝났다. 다이너."], ["……네 자리 비어 있다."]], bond: ["minos02", ["……이렇게 찍는 거 맞냐."], ["지우지 마라."]] },
+  rainer: { warm: ["rainer1", ["마감했어요."], ["……컵 하나는 당신 거로 남겨 뒀어요."]], bond: ["rainer", ["뉴올리언스 왔어요. 비 와요."], ["문 앞 화분, 아직 살아 있더라고요."]] },
+  anzi: { warm: ["anzi1", ["내일 1면 교정본."], ["……아직 아무도 못 본 거야."]], bond: ["anzi", ["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]] },
+  jin: { warm: ["jin1", ["오늘 처리한 서류입니다."], ["……보고는 아닙니다. 그냥."]], bond: ["jin", ["새로 들였어."], ["……같이 들을 거면 와."]] },
+  maquia: { warm: ["maquia1", ["……."], ["여기 자주 온다."]], bond: ["maquia", ["네 차례다."], ["……서두를 필요는 없다."]] },
 };
+// 가까움(60): 음성 메시지 한 통 [보내기 전 말, 녹음 내용, 보낸 뒤 말]
+const VOICE = {
+  ruan: [["타자 치기 귀찮다."], "……어. 나다. 할 말은 없는데. 그냥 걸어 봤어. ……끊는다.", []],
+  jenis: [["손이 바빠서요."], "음, 제니스예요. 회의 끝나고 복도에서 녹음하는 중이에요. ……목소리로 하니까 좀 이상하네요. 잘 자요.", []],
+  minos: [["운전 중이다."], "……미노스다. 순찰차 안이다. 별일 없다. ……문 잠그고 자라.", []],
+  rainer: [["음… 들어 볼래요?"], "레이너예요. 가게 닫고 피아노 앞이에요. 한 소절만 칠게요. ……어땠어요?", []],
+  anzi: [["이번엔 글 말고."], "흠. 안지. 녹음 버튼 눌렀으니까 아무 말이나 할게. ……아니다. 그냥 목소리 남기고 싶었어. 답장해.", []],
+  jin: [["……텍스트로 남기기 애매해서."], "……진입니다. 업무 보고는 아니고. ……퇴근했어. 그 말 하려고.", []],
+  maquia: [[], "……마키아다. …… ……들었으면 됐다.", ["……."]],
+};
+function tryVoice(id) {
+  const r = REL(id), V = VOICE[id];
+  if (!V || r.voice || TIER_N[tier(id)] < 2) return;
+  r.voice = true; save();
+  pushMsg(id, [...V[0], `VOICE:${id}|${V[1]}`, ...V[2]]);
+}
 function tryPhoto(id) {
   const r = REL(id), P = PHOTO[id]; if (!P) return;
   // 예전 저장분: 각별함 사진 하나를 받았던 사람은 첫 사진을 받은 걸로
   if (!r.photos) { r.photos = {}; if (r.photo) r.photos[Object.keys(P)[0]] = true; }
+  // 예전 저장분: 가까움 사진(close)은 이제 익숙함 사진(warm)
+  if (r.photos.close) { r.photos.warm = true; delete r.photos.close; save(); }
   const st = Object.keys(P).find(k => !r.photos[k] && TIER_N[tier(id)] >= TIER_N[k]);
   if (!st) return;
   const [file, pre, post] = P[st], src = `../../photo/${file}.webp`, im = new Image();
@@ -1162,6 +1426,7 @@ function tryPhoto(id) {
   im.src = src;
 }
 setTimeout(() => ORDER.forEach(id => tryPhoto(id)), 15000);
+setTimeout(() => ORDER.forEach(id => tryVoice(id)), 45000);
 function relLabel(id) { return `<span class="rel rel-${tier(id)}">관계 · ${TIER_KO[tier(id)]} ${aff(id)}</span>`; }
 function syncChatInput() {
   const on = !!cur && !busy;
