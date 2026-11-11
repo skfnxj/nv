@@ -671,15 +671,21 @@ function bubble(who, text) {
   $("#chatLog").appendChild(p); $("#chatLog").scrollTop = 1e6;
 }
 const shortTxt = t => String(t).startsWith("IMG:") ? "📷 사진" : String(t).startsWith("VOICE:") ? "🎙 음성 메시지" : t;
-// "VOICE:캐릭터|대사" 는 음성 메시지. voice/<캐릭터>.mp3 가 있으면 그 소리를, 없으면 파형만 흐르고 받아쓰기가 뜬다
+// "VOICE:캐릭터|대사" 는 음성 메시지. voice/<캐릭터>.mp3(영어)를 틀고, 다 들으면 영어 대사와 한국어 번역이 뜬다
 function voiceBubble(p, text) {
-  const [vid, said] = text.slice(6).split("|"), sec = Math.max(4, Math.min(20, Math.round(said.length / 4)));
+  const [vid] = text.slice(6).split("|"), V = VOICE[vid] || [], said = V[1] || text.slice(6).split("|")[1], en = V[3], sec = Math.max(4, Math.min(20, Math.round(said.length / 4)));
   const heard = (ST.vh || {})[vid];
   p.classList.add("voice"); if (heard) p.classList.add("heard");
   let seed = said.length; const h = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   p.innerHTML = `<button class="vplay" aria-label="재생">▶</button><span class="wave">${Array.from({ length: 28 }, () => `<i style="height:${25 + Math.round(h() * 75)}%"></i>`).join("")}</span><em class="vdur">0:${String(sec).padStart(2, "0")}</em><span class="vtx"></span>`;
-  p.querySelector(".vtx").textContent = said;
+  const vtx = p.querySelector(".vtx");
+  if (en) { const e = document.createElement("span"), k = document.createElement("small"); e.className = "ven"; e.textContent = en; k.className = "vko"; k.textContent = said; vtx.append(e, k); }
+  else vtx.textContent = said;
   const btn = p.querySelector(".vplay"), bars = [...p.querySelectorAll(".wave i")];
+  // 실제 녹음 길이로 표시
+  const meta = new Audio(); meta.preload = "metadata";
+  meta.onloadedmetadata = () => { if (isFinite(meta.duration)) p.querySelector(".vdur").textContent = `0:${String(Math.round(meta.duration)).padStart(2, "0")}`; };
+  meta.src = `../../voice/${vid}.mp3`;
   btn.onclick = () => {
     if (p.classList.contains("playing")) return;
     p.classList.add("playing"); btn.textContent = "❚❚";
@@ -1393,15 +1399,22 @@ const PHOTO = {
   jin: { warm: ["jin1", ["오늘 처리한 서류입니다."], ["……보고는 아닙니다. 그냥."]], bond: ["jin", ["새로 들였어."], ["……같이 들을 거면 와."]] },
   maquia: { warm: ["maquia1", ["……."], ["여기 자주 온다."]], bond: ["maquia", ["네 차례다."], ["……서두를 필요는 없다."]] },
 };
-// 가까움(60): 음성 메시지 한 통 [보내기 전 말, 녹음 내용, 보낸 뒤 말]
+// 가까움(60): 음성 메시지 한 통 [보내기 전 말, 녹음 내용(한국어 번역), 보낸 뒤 말, 실제 녹음(영어, voice/<캐릭터>.mp3)]
 const VOICE = {
-  ruan: [["타자 치기 귀찮다."], "……어. 나다. 할 말은 없는데. 그냥 걸어 봤어. ……끊는다.", []],
-  jenis: [["손이 바빠서요."], "음, 제니스예요. 회의 끝나고 복도에서 녹음하는 중이에요. ……목소리로 하니까 좀 이상하네요. 잘 자요.", []],
-  minos: [["운전 중이다."], "……미노스다. 순찰차 안이다. 별일 없다. ……문 잠그고 자라.", []],
-  rainer: [["음… 들어 볼래요?"], "레이너예요. 가게 닫고 피아노 앞이에요. 한 소절만 칠게요. ……어땠어요?", []],
-  anzi: [["이번엔 글 말고."], "흠. 안지. 녹음 버튼 눌렀으니까 아무 말이나 할게. ……아니다. 그냥 목소리 남기고 싶었어. 답장해.", []],
-  jin: [["……텍스트로 남기기 애매해서."], "……진입니다. 업무 보고는 아니고. ……퇴근했어. 그 말 하려고.", []],
-  maquia: [[], "……마키아다. …… ……들었으면 됐다.", ["……."]],
+  ruan: [["타자 치기 귀찮다."], "……어. 나다. 할 말은 없는데. 그냥 걸어 봤어. ……끊는다.", [],
+    "...Yeah. It's me. Got nothing to say. Just... called. ...I'm hanging up."],
+  jenis: [["손이 바빠서요."], "제니스예요. 회의 끝나고 복도에서 녹음하는 중이에요. ……목소리로 하니까 좀 이상하네요. 잘 자요.", [],
+    "Hi, it's Jenis. I'm recording this in the hallway after the meeting. ...It feels a little strange, doing this out loud. Sleep well."],
+  minos: [["운전 중이다."], "……미노스다. 순찰차 안이다. 별일 없다. ……문 잠그고 자라.", [],
+    "...It's Minos. I'm in the patrol car. Nothing happened. ...Lock your door, and get some sleep."],
+  rainer: [["음… 들어 볼래요?"], "레이너예요. 가게 닫았어요. 피아노 앞에 앉았는데…… 오늘은 목소리만요. ……잘 자요.", [],
+    "It's Rainer. I've closed up. I'm sitting at the piano... but tonight, just my voice. ...Good night."],
+  anzi: [["이번엔 글 말고."], "흠. 안지. 녹음 버튼 눌렀으니까 아무 말이나 할게. ……아니다. 그냥 목소리 남기고 싶었어. 답장해.", [],
+    "Hm. Anzi. I hit record, so I'll just say whatever. ...Nah. I just wanted to leave you my voice. Text me back."],
+  jin: [["……텍스트로 남기기 애매해서."], "……진입니다. 업무 보고는 아니고. ……퇴근했어. 그 말 하려고.", [],
+    "...This is Jin. It's not a work report. ...I'm off now. That's all I wanted to say."],
+  maquia: [[], "……마키아다. …… ……들었으면 됐다.", ["……."],
+    "...It's Maquia. ... ... If you heard this, that's enough."],
 };
 function tryVoice(id) {
   const r = REL(id), V = VOICE[id];

@@ -693,3 +693,5 @@ html { scroll-behavior: smooth; }
 .bub.voice .vdur { font-family: var(--mono); font-size: 11px; color: var(--faint); font-style: normal; }
 .bub.voice .vtx { grid-column: 1 / -1; display: none; padding-top: 6px; border-top: 1px dashed rgba(125,155,255,.3); font-size: 13.5px; opacity: .85; }
 .bub.voice.heard .vtx { display: block; }
+.bub.voice .ven { display: block; font-style: italic; }
+.bub.voice .vko { display: block; margin-top: 4px; font-size: 12.5px; color: var(--faint); }
