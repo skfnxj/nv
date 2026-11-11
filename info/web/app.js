@@ -1803,6 +1803,20 @@ const BOARD_POOL = [
   { who: "@ironmoth", t: "[판매] 텀블러 2차 물량", p: "혈액팩 위장 텀블러 다시 들어옴. 체온 유지형. 이번엔 색 세 가지.", cm: [["@drape", "검정 있음?"], ["@ironmoth", "검정만 있음"]] },
   { who: "@nightjar", t: "[잡담] 마키아 봤다는 사람", p: "지하 3층 복도에서 스쳤는데 말 한마디 안 함. 근데 내 이름 알고 있었음.", cm: [["@static", "그분은 다 앎"], ["@watcher", "……그 얘긴 여기서 하지 말자"]] },
   { who: "@gearhead", t: "[후기] 이어피스 써 봄", p: "맥박 소리 진짜 줄어듦. 버스 탈 수 있게 됨. 신입들한테 추천.", cm: [["@bellhop", "신입 들었냐 이거 사라"]] },
+  { who: "@drape", t: "[후기] 벨 에포크 마감 직전", p: "사장님이 피아노 치고 있었음. 손님 나밖에 없었는데 끝까지 다 침.", cm: [["@bellhop", "그거 아무한테나 안 쳐 주는데"], ["@static", "너 찍혔다"]] },
+  { who: "@ironmoth", t: "[판매] 피 향 덮는 향수 재입고", p: "신입용. 미노스 형사 근처에선 소용없다는 후기 있음.", cm: [["@watcher", "그 형사 코는 반칙임"], ["@drape", "검정 병 있음?"]] },
+  { who: "@static", t: "[목격] 루안이 웃는 거 봄", p: "스트립 남쪽에서 신입이랑 있었는데 웃었음. 진짜로.", cm: [["@nightjar", "사진 없으면 무효"], ["@bellhop", "……세상 끝나는 날인가"]] },
+  { who: "@nightjar", t: "[질문] 디스패치 거절해도 괜찮음?", p: "임무 하나 거절했더니 서기장한테 '확인했습니다' 한 줄 옴. 이게 더 무서움.", cm: [["@watcher", "평가표에 남음. 조용히."], ["@static", "그 한 줄이 제일 무서운 거 맞음"]] },
+  { who: "@watcher", t: "[경고] 더 레저 쪽 움직임", p: "현상금 목록에 새 얼굴 올라왔다는 말 있음. 신입 쪽이라는 소문.", cm: [["@gearhead", "……누구"], ["@watcher", "모르는 게 나아"]] },
+  { who: "@bellhop", t: "[잡담] 제니스 출장 언제 끝남", p: "공급 라인 결재 밀려서 의료국 난리. 크레인 국장님만 평온함.", cm: [["@drape", "국장님은 늘 평온함"], ["@nightjar", "그게 제일 신기"]] },
+  { who: "@ironmoth", t: "[공구] 암막 커튼 같이 살 사람", p: "낮잠 제대로 자고 싶은 사람. 4명 모이면 진행.", cm: [["@drape", "나 낌"], ["@static", "신입 거처에도 달 수 있음?"]] },
+  { who: "@static", t: "[잡담] 크로니클 편집국 불", p: "새벽 4시에도 켜져 있음. 안지는 언제 자는 거임?", cm: [["@nightjar", "안 잠"], ["@bellhop", "잔다는 기록이 없음"]] },
+  { who: "@drape", t: "[후기] 첫 급식 기억나냐", p: "난 울었음. 맛있어서.", cm: [["@gearhead", "다들 그럼"], ["@watcher", "그 얘긴 신입한테 하지 마. 아직이면."]] },
+  { who: "@nightjar", t: "[목격] 서기장 사석 모드", p: "퇴근 후 바에서 봤는데 반말 쓰더라. 상대는 못 봄.", cm: [["@static", "서기장도 퇴근을 함?"], ["@bellhop", "그 바 어디냐"]] },
+  { who: "@gearhead", t: "[질문] 낮에 눈 아픈 거 정상임?", p: "신입이 물어봄. 햇빛 보면 눈이 시리대.", cm: [["@drape", "신입 때만 그럼"], ["@ironmoth", "한 달 지나면 괜찮아짐"]] },
+  { who: "@watcher", t: "[경고] 프리몬트 폭주 개체 회수", p: "어젯밤 디바이스 응답 없는 개체 하나 회수됨. 미노스 형사가 먼저 와 있었다고.", cm: [["@nightjar", "또 그 형사"], ["@gearhead", "회수됐으면 다행이지"]] },
+  { who: "@bellhop", t: "[잡담] 펜트하우스 꼭대기 불", p: "새벽 3시에 한 번 켜졌다 꺼짐. 매일 같은 시각.", cm: [["@static", "체스 두는 시간이래"], ["@nightjar", "누구랑?"]] },
+  { who: "@drape", t: "[잡담] 옆자리 신입 디바이스", p: "손목에서 계속 진동 옴. 인기 많네.", cm: [["@bellhop", "일곱 중 몇 명이냐"], ["@static", "부럽다 진짜"]] },
 ];
 const NOISE_LOCAL = typeof NOISE !== "undefined" ? NOISE : [];
 // 노이즈 필터에 새로 들어오는 제보 (시간이 지나며 하나씩)
@@ -1842,6 +1856,20 @@ function addNoise() {
 const escH = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const myH = () => "@" + (ST.name || "신입");
 const CM_DRAFT = {};
+// 게시판 새 글: 위에 붙고, 최대 POST_SHOW개. 다 나왔거나 꽉 차면 제일 오래된 새 글을 내리고 내려간 글 중 하나가 다시 올라온다 (계속 순환)
+const POST_SHOW = 6;
+function addPost() {
+  const E = ST.extraPosts;
+  let left = BOARD_POOL.map((_, i) => i).filter(i => !E.includes(i));
+  if (!left.length || E.length >= POST_SHOW) {
+    const out = E.pop();
+    if (out != null) { const k = "b" + BOARD_POOL[out].t; if (ST.liveCm) delete ST.liveCm[k]; if (ST.bump) delete ST.bump[k]; } // 다시 올라오면 새 글처럼
+    left = BOARD_POOL.map((_, i) => i).filter(i => !E.includes(i) && i !== out);
+  }
+  if (!left.length) return false;
+  E.unshift(left[rand(0, left.length - 1)]); save(); renderUX();
+  return true;
+}
 function boardPosts() { return [...ST.extraPosts.map(i => ({ ...BOARD_POOL[i], fresh: true })), ...BOARD]; }
 function renderUX() {
   const left = Math.max(0, Math.ceil((ST.mk.at - NOW()) / 1000));
@@ -2064,8 +2092,7 @@ function randomEvent() {
   // 먼저 오는 메시지는 쉬는 시간이 안 지났으면 건너뛰고, 대신 디바이스 상태만 바뀐다
   if (r < .3) { if (!ambient()) shiftDevice(); }
   else if (r < .55) {
-    const left = BOARD_POOL.map((_, i) => i).filter(i => !ST.extraPosts.includes(i));
-    if (left.length) { ST.extraPosts.unshift(left[rand(0, left.length - 1)]); save(); renderUX(); if ($("#ux").classList.contains("on")) toast("게시판에 새 글이 올라왔습니다."); }
+    if (addPost()) { if ($("#ux").classList.contains("on")) toast("게시판에 새 글이 올라왔습니다."); }
     else shiftDevice();
   } else if (r < .68) { if (addNoise()) { if ($("#ux").classList.contains("on")) toast("NOISE FILTER · 새 제보가 들어왔습니다."); } else shiftDevice(); }
   else if (r < .85) shiftDevice();
@@ -2085,8 +2112,7 @@ function welcomeBack() {
     // 자리를 비운 사이 온 메시지: 쉬는 시간과 상관없이, 안 쓴 말 중에서만 (다 썼으면 0건)
     let n = 0; const want = Math.min(3, 1 + Math.floor(gone / 1800000));
     for (let i = 0; i < want; i++) if (ambient(true, true)) n++;
-    const left = BOARD_POOL.map((_, i) => i).filter(i => !ST.extraPosts.includes(i));
-    if (left.length) ST.extraPosts.unshift(left[rand(0, left.length - 1)]);
+    addPost();
     addNoise();
     addNotice(NOTICE_POOL[rand(0, NOTICE_POOL.length - 1)]);
     shiftDevice();
