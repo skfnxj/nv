@@ -676,10 +676,8 @@ function voiceBubble(p, text) {
   const heard = (ST.vh || {})[vid];
   p.classList.add("voice"); if (heard) p.classList.add("heard");
   let seed = said.length; const h = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  p.innerHTML = `<button class="vplay" aria-label="재생">▶</button><span class="wave">${Array.from({ length: 28 }, () => `<i style="height:${25 + Math.round(h() * 75)}%"></i>`).join("")}</span><em class="vdur">0:${String(sec).padStart(2, "0")}</em><span class="vtx"></span>`;
-  const vtx = p.querySelector(".vtx");
-  if (en) { const e = document.createElement("span"), k = document.createElement("small"); e.className = "ven"; e.textContent = en; k.className = "vko"; k.textContent = said; vtx.append(e, k); }
-  else vtx.textContent = said;
+  // 대사는 보여 주지 않고, 녹음 파일 이름만 위에 단다 (우연히 녹음돼 간 파일)
+  p.innerHTML = `<span class="vfile">${VFILE[vid] || "voice_memo.mp3"}</span><button class="vplay" aria-label="재생">▶</button><span class="wave">${Array.from({ length: 28 }, () => `<i style="height:${25 + Math.round(h() * 75)}%"></i>`).join("")}</span><em class="vdur">0:${String(sec).padStart(2, "0")}</em>`;
   const btn = p.querySelector(".vplay"), bars = [...p.querySelectorAll(".wave i")];
   // 실제 녹음 길이로 표시
   const meta = new Audio(); meta.preload = "metadata";
@@ -1415,6 +1413,9 @@ const VOICE = {
   maquia: [[], "혼자 왔군. ……좋다. 곁에 앉아라. 밤은 길다.", ["……들었나.", "잊어라."],
     "You came alone. ...Good. Sit with me. The night is long."],
 };
+// 말풍선 위에 뜨는 녹음 파일 이름 (녹음된 시각)
+const VFILE = { ruan: "Ruan_REC_0412.mp3", anzi: "Anzi_REC_0258.mp3", jenis: "Jenis_REC_2347.mp3", minos: "Minos_REC_0446.mp3",
+  rainer: "Rainer_REC_2318.mp3", jin: "Jin_REC_0521.mp3", maquia: "Maquia_REC_0303.mp3" };
 function tryVoice(id) {
   const r = REL(id), V = VOICE[id];
   if (!V || r.voice || TIER_N[tier(id)] < 2) return;
