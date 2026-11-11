@@ -828,7 +828,8 @@ const REL = id => (ST.rel[id] = ST.rel[id] || { lastIntent: "", lastText: "", re
 // ㅇㅇ·ㄱㄴ·ㅋㅋ·네 같은 짧은 말은 세지 않는다
 const counts = t => { const n = String(t).replace(/[\s.!?~,…]/g, ""); return n.length > 1 && !/^[ㄱ-ㅎㅏ-ㅣ]+$/.test(n) && !SHORT_RE.test(n); };
 const meCount = id => ((CHAT[id] && CHAT[id].log) || []).filter(m => m[0] === "me" && counts(m[1])).length;
-const aff = id => Math.max(0, Math.min(100, 5 + meCount(id) * 3 - (REL(id).pen || 0)));
+// bonus = 통화를 받거나 위기 때 피를 받은 만큼 더해지는 호감
+const aff = id => Math.max(0, Math.min(100, 5 + meCount(id) * 3 + (REL(id).bonus || 0) - (REL(id).pen || 0)));
 const tier = id => { const a = aff(id); return a >= 85 ? "bond" : a >= 60 ? "close" : a >= 30 ? "warm" : "cold"; };
 const TIER_KO = { cold: "경계", warm: "익숙함", close: "가까움", bond: "각별함" };
 const TIER_N = { cold: 0, warm: 1, close: 2, bond: 3 };
@@ -2165,3 +2166,175 @@ $(".pt-foot span").ondblclick = () => { if (confirm("이 브라우저의 진행 
 
 tick(); setInterval(tick, 30000);
 renderMe(); renderNotices(); renderDevices(); renderDispatch(); renderList(); renderUX(); BGM.sync();
+
+/* ===================================================================
+   이벤트 8종 — 새벽 3시 · 긴급 호출 · 크랙 암호 · 갈증 위기 · 질투 · 사냥꾼 경보 · 날짜 기념 · 캐릭터 익명 글
+   =================================================================== */
+const EV = ST.ev = ST.ev || { calls: {}, h3: "", h3seen: [], crisisAt: 0, jl: { id: "", n: 0, at: 0 }, jdone: {}, huntAt: 0, huntN: 0 };
+if (!ST.born) { ST.born = NOW(); save(); }
+const portalOn = () => $("#portal").classList.contains("on") || $("#ux").classList.contains("on");
+const busyUI = () => $("#modal").classList.contains("on") || $("#call").classList.contains("on");
+const lvDay = () => new Date().toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" });
+const jo = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return w + ((c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28) ? a : b); };
+const topAff = (ex = []) => ORDER.filter(id => !ex.includes(id)).sort((a, b) => aff(b) - aff(a))[0];
+const later = (fn, a, b) => setTimeout(fn, rand(a, b));
+
+// ---------- 1. 새벽 3시 (라스베이거스 시각) ----------
+const H3_MAQ = [["……깨어 있군."], ["03시다.", "도시가 숨을 고르는 시간."], ["이 시각엔 아무도 보지 않는다.", "……나 말고는."], ["오늘 밤도 무사하군.", "흠."], ["체스판, 네 차례다."]];
+// 3. 크랙 암호: 03시에만 보이는 게시판 글
+const H3_POST = { who: "@03:00", h: "♥ 3", t: "[03:00] 이 글은 한 시간 뒤 사라집니다", p: "문은 밤에만 열린다. 암호는 RED NIGHT. 다른 곳에서 이 말을 꺼내 봐. 누군가는 알아들을 거다.",
+  cm: [["@익명", "……봤다"], ["@nightjar", "이거 매일 이 시각에만 올라옴"]] };
+function checkH3() {
+  if (lvHour() !== 3 || EV.h3 === lvDay() || !portalOn()) return;
+  EV.h3 = lvDay(); save();
+  glitch(); toast("📡 03:00 · HOUSE 정기 방송", 4200);
+  addNotice(["red", "03:00", "하우스 정기 방송 — 이 시각의 기록은 남지 않습니다."]);
+  renderUX();
+  const left = H3_MAQ.map((_, i) => i).filter(i => !EV.h3seen.includes(i));
+  if (left.length) { const i = left[rand(0, left.length - 1)]; EV.h3seen.push(i); save(); later(() => pushMsg("maquia", H3_MAQ[i]), 6000, 12000); }
+}
+
+// ---------- 2. 긴급 호출 ----------
+const PHONE = {
+  ruan: [["……받았네.", "아니, 별일은 없고.", "그냥 네가 받는지 보려고.", "……끊는다."], ["왜 안 받아.", "……됐다."]],
+  jenis: [["아, 받으셨네요. 잠깐이면 돼요.", "오늘 수치 기록 봤어요. 나쁘지 않네요.", "……그 얘기 하려고 건 건 아니고요.", "목소리 듣고 싶었어요. 끊을게요."], ["전화 안 받으시네요.", "바쁘신 거면 괜찮아요."]],
+  minos: [["어. 나다.", "지금 순찰 중인데, 네 거처 앞 지나가.", "불 켜져 있길래.", "……문 잠갔지? 됐다."], ["안 받네.", "……자는 거면 됐다."]],
+  rainer: [["음, 받았네요.", "가게 문 닫고 혼자 있으니까 조용해서요.", "그냥, 누구 목소리가 듣고 싶었어요.", "……당신이요. 잘 자요."], ["음… 바빴나 봐요.", "다음엔 받아 줘요."]],
+  anzi: [["흠, 받았네? 의외다.", "지금 편집국인데 마감이 너무 지루해서.", "아무 말 안 해도 돼. 듣고만 있을게.", "……됐어. 충분히 들었어."], ["흠. 씹혔네.", "기사 하나 쓸까. '신입, 선배 전화 무시'."]],
+  jin: [["……진입니다.", "업무 전화 아닙니다.", "배정표 보다가, 이름이 눈에 걸려서.", "……그게 다야. 쉬어."], ["부재중 1건 확인하십시오.", "……급한 건 아닙니다."]],
+  maquia: [["…….", "받았군.", "아무 말도 하지 마라. 숨소리면 충분하다.", "……됐다."], ["……받지 않았군.", "기억해 두지."]],
+};
+const callEl = document.createElement("div"); callEl.id = "call"; callEl.className = "call";
+callEl.innerHTML = `<div class="c-in"><div class="c-ring"><img alt=""></div><b class="c-nm"></b><span class="c-st"></span><div class="c-sub"></div>
+  <div class="c-btn"><button class="c-no">거절</button><button class="c-yes">받기</button></div></div>`;
+document.body.appendChild(callEl);
+function startCall(id) {
+  const [lines, missed] = PHONE[id]; let done = false, sec = 0, timer;
+  EV.calls[id] = true; save();
+  callEl.querySelector("img").src = `../../char/${id}-e01.webp`;
+  callEl.querySelector(".c-nm").textContent = CH[id].ko;
+  callEl.querySelector(".c-st").textContent = "긴급 호출 · HOUSE LINE";
+  callEl.querySelector(".c-sub").textContent = "";
+  callEl.className = "call on ring"; callEl.querySelector(".c-btn").style.display = "";
+  try { navigator.vibrate && navigator.vibrate([400, 200, 400, 200, 400]); } catch (e) {}
+  const end = (log, msg) => {
+    if (done) return; done = true; clearInterval(timer); clearTimeout(miss);
+    callEl.className = "call"; CHAT[id].log.push(["them", log]); save(); renderList();
+    if (cur === id && $("#tab-msg").classList.contains("on")) openChat(id);
+    if (msg) later(() => pushMsg(id, msg), 15000, 30000);
+  };
+  const miss = setTimeout(() => end("📞 부재중 전화", missed), 15000);
+  callEl.querySelector(".c-no").onclick = () => end("📞 거절한 전화", missed);
+  callEl.querySelector(".c-yes").onclick = async () => {
+    clearTimeout(miss); callEl.className = "call on talk"; callEl.querySelector(".c-btn").style.display = "none";
+    const st = callEl.querySelector(".c-st"), sub = callEl.querySelector(".c-sub");
+    timer = setInterval(() => { sec++; st.textContent = `통화 중 · 0:${String(sec).padStart(2, "0")}`; }, 1000);
+    const duck = BGM.on && BGM.master; if (duck) BGM.master.gain.setTargetAtTime(.25, BGM.ctx.currentTime, .3);
+    for (const l of lines) { sub.textContent = l; await new Promise(r => setTimeout(r, 900 + l.length * 70)); }
+    sub.textContent = "— 통화 종료 —"; await new Promise(r => setTimeout(r, 1200));
+    if (duck && BGM.on) BGM.master.gain.setTargetAtTime(.75, BGM.ctx.currentTime, .5);
+    REL(id).bonus = (REL(id).bonus || 0) + 3;
+    end(`📞 음성 통화 · 0:${String(sec).padStart(2, "0")}`);
+    renderDevices();
+  };
+}
+function tryCall() {
+  const ids = ORDER.filter(id => !EV.calls[id] && TIER_N[tier(id)] >= 1);
+  if (!ids.length) return false;
+  startCall(ids[rand(0, ids.length - 1)]); return true;
+}
+
+// ---------- 4. 갈증 위기 ----------
+const OFFER = { ruan: "……마셔. 내 거.", jenis: "제 피로 하세요. 성분은 제가 제일 잘 알아요.", minos: "……내 피 줄게. 불완전해도 없는 것보단 낫다.",
+  rainer: "와요. 내 걸로 해요. 아무도 모르게.", anzi: "흠, 내 거 마셔. 이번 일은 기사 안 써.", jin: "규정상 혈액팩이 원칙입니다. ……급하면, 제 걸로.", maquia: "……마셔라. 이유는 묻지 마라." };
+const AFTER = { ruan: ["……됐냐.", "다음엔 이 지경 되기 전에 말해."], jenis: ["수치 내려가는 거 확인했어요.", "……제 피가 맞았나 봐요."], minos: ["……됐다.", "누구한테도 말하지 마라."],
+  rainer: ["음, 이제 얼굴이 돌아왔네요.", "이건 둘만 아는 걸로 해요."], anzi: ["흠. 맛있었어?", "……대답 안 해도 돼. 표정에 다 써 있어."], jin: ["……기록은 혈액팩으로 남기겠습니다.", "이번만이야."], maquia: ["……이제 너에게도 내가 흐른다.", "잊지 마라."] };
+const ENVY = { ruan: n => [`……${jo(n, "이", "가")} 줬다며.`, "다음엔 나한테 와."], jenis: n => [`${n} 씨 피를 드셨다고요.`, "음, 성분표는 제가 따로 볼게요."], minos: n => [`${jo(n, "이", "가")} 먼저였냐.`, "……알았다."],
+  rainer: n => [`음… ${n} 피가 입에 맞았나 봐요.`], anzi: n => [`흠, ${jo(n, "을", "를")} 골랐네.`, "기억해 둘게."], jin: n => [`${n} 쪽 급식 기록 확인했습니다.`, "……그렇군요."], maquia: n => ["……흠.", `${jo(n, "이었", "였")}군.`] };
+function thirstCrisis() {
+  if (ST.th < 90 || NOW() - EV.crisisAt < 12 * 3600000 || busyUI() || !portalOn()) return;
+  EV.crisisAt = NOW(); save();
+  const ids = ORDER.slice().sort((a, b) => aff(b) - aff(a)).slice(0, 3);
+  ids.forEach((id, k) => later(() => pushMsg(id, [OFFER[id]]), 1500 + k * 2500, 2500 + k * 2500));
+  later(() => {
+    modal(`<div class="crisis"><small>THIRST · CRITICAL</small><h3>갈증도 ${ST.th}%</h3><p>누구의 피를 받을까.</p>
+      <div class="cr-btns">${ids.map(id => `<button data-cr="${id}"><img src="../../char/${id}-e01.webp" alt="">${CH[id].ko}</button>`).join("")}<button data-cr="none" class="hold">참는다</button></div></div>`, "crisis-m");
+    $$("[data-cr]").forEach(b => b.onclick = () => {
+      $("#modal").className = "modal"; const pick = b.dataset.cr;
+      if (pick === "none") { later(() => pushMsg("jin", ["……버티는 것도 판단입니다.", "다만 95를 넘기면 제가 직접 갑니다."]), 3000, 6000); return; }
+      drink(55, 75, `${CH[pick].ko}의 피`); REL(pick).bonus = (REL(pick).bonus || 0) + 6; save(); renderDevices();
+      later(() => pushMsg(pick, AFTER[pick]), 4000, 8000);
+      const rival = ids.filter(x => x !== pick)[0]; if (rival) later(() => pushMsg(rival, ENVY[rival](CH[pick].ko)), 40000, 80000);
+    });
+  }, 9000, 11000);
+}
+
+// ---------- 5. 질투 ----------
+const JEAL = { ruan: n => [`${jo(n, "이랑", "랑")} 무슨 얘길 그렇게 오래 해.`, "……아니다. 신경 꺼."], jenis: n => [`${n} 씨랑 대화가 길어지네요.`, "음, 그냥 관찰 기록이에요."],
+  minos: n => [`……${jo(n, "이랑", "랑")} 너무 붙어 있지 마라.`], rainer: n => [`요즘 ${jo(n, "이랑", "랑")} 자주 연락하나 봐요.`, "괜찮아요. 저는 기다리는 거 잘해요."],
+  anzi: n => [`흠, ${jo(n, "이랑", "랑")} 수다 삼매경이던데.`, "나도 재밌는 얘기 많은데."], jin: n => [`${jo(n, "과", "와")}의 통신 기록이 길어졌습니다.`, "……업무상 확인입니다."], maquia: n => [`……${n}.`, "흥미롭군. 네 선택이."] };
+$("#chatIn").addEventListener("submit", () => {
+  const id = cur; if (!id) return;
+  const J = EV.jl;
+  if (J.id === id && NOW() - J.at < 20 * 60000) J.n++; else { J.id = id; J.n = 1; }
+  J.at = NOW(); save();
+  if (J.n !== 6) return;
+  const day = lvDay(), who = ORDER.filter(x => x !== id && TIER_N[tier(x)] >= 1 && EV.jdone[x + ">" + id] !== day).sort((a, b) => aff(b) - aff(a))[0];
+  if (!who) return;
+  EV.jdone[who + ">" + id] = day; save();
+  later(() => pushMsg(who, JEAL[who](CH[id].ko)), 20000, 40000);
+});
+
+// ---------- 6. 사냥꾼 경보 ----------
+const HUNT_POST = { who: "📰 제보", h: "♥ 3", t: "[방금] 신입으로 보이는 알터 목격", p: "벨 에포크 근처. 피 냄새가 유난히 진하다는 말이 사냥꾼 쪽에서 돌기 시작함.",
+  cm: [["익명", "사진 있음?"], ["익명", "곧 올라올 듯"]], risk: ["위험", "risk-h", "당신에 대한 제보 · 확산 중"] };
+const RESCUE = { ruan: ["어디야. 지금 간다.", "……뒤돌아보지 말고 걸어."], minos: ["제보 봤다. 경찰 쪽은 내가 막는다.", "넌 숨어."], rainer: ["가게 뒷문 열어 둘게요.", "지금 와요. 아무 말 말고."],
+  anzi: ["그 제보, 내가 내렸어.", "흠, 넌 오늘 밖에 나가지 마."], jenis: ["냄새 차단제 거처로 보냈어요.", "바로 바르세요. 지금요."], jin: ["위치 추적 켰습니다.", "……끄지 마."], maquia: ["……제보자는 내가 찾는다.", "너는 아무것도 보지 마라."] };
+function hunterAlert() {
+  if (NOW() - EV.huntAt < 48 * 3600000 || NOW() - ST.born < 864e5 || busyUI()) return false;
+  EV.huntAt = NOW(); EV.huntN++; save(); renderUX(); glitch();
+  modal(`<div class="hunt"><small>DISPATCH · PRIORITY</small><h3>⚠ 은신 지시</h3><p>당신에 대한 목격 제보가 확산 중입니다.<br>지금 위치를 벗어나 가장 가까운 하우스 거점으로 이동하십시오.</p></div>`, "hunt-m");
+  later(() => pushMsg("jin", ["노이즈 필터 확인하십시오.", "당분간 단독 이동 금지입니다."]), 5000, 8000);
+  const r = topAff(["jin"]); later(() => pushMsg(r, RESCUE[r]), 25000, 40000);
+  return true;
+}
+
+// ---------- 7. 날짜 기념 ----------
+const D7 = { ruan: ["일주일 버텼네.", "……칭찬 아니다."], jenis: ["7일 차 기록, 예상보다 안정적이에요.", "축하할 일이죠."], minos: ["일주일. 안 죽었네.", "……다행이다."],
+  rainer: ["벌써 일주일이에요.", "앞치마, 이제 제대로 묶네요."], anzi: ["흠, 일주일.", "기념 기사 하나 써 줄까."], jin: ["등록 7일 차 확인했습니다.", "……잘 버텼어."], maquia: ["일주일.", "생각보다 오래 버티는군."] };
+const D30 = { ruan: ["한 달.", "……이제 좀 알터 같네."], jenis: ["30일 데이터 정리했어요.", "당신 그래프가 제일 예뻐요."], minos: ["한 달 됐다.", "……같이 버텨서 다행이다."],
+  rainer: ["한 달이네요.", "오늘 커피는 내가 내릴게요."], anzi: ["한 달 기념.", "오늘은 내가 들어 줄게. 뭐든."], jin: ["30일. 신입 기간 종료입니다.", "……축하해."], maquia: ["한 달.", "이제 너는 이 도시의 일부다."] };
+function checkDays() {
+  const day = Math.floor((NOW() - ST.born) / 864e5) + 1;
+  for (const [d, T, n] of [[7, D7, "첫 주 생존을 기록합니다."], [30, D30, "신입 기간이 끝났습니다."]]) {
+    if (day < d || ST.once["day" + d]) continue;
+    ST.once["day" + d] = true; save();
+    addNotice(["gold", `DAY ${d}`, `신입 알터 등록 ${d}일 차 — ${n}`]);
+    const id = topAff(); later(() => pushMsg(id, T[id]), 5000, 9000);
+    break;
+  }
+}
+
+// ---------- 8. 캐릭터 익명 글 (게시판 순환에 섞인다) ----------
+BOARD_POOL.push(
+  { who: "@익명", t: "[잡담] ……", p: "…….", cm: [["@static", "이거 누구임"], ["@watcher", "건드리지 마라"]] },
+  { who: "@익명", t: "[질문] 신입한테 뭐 사 주면 좋아함", p: "그냥 궁금해서. 내가 사 줄 건 아니고.", cm: [["@bellhop", "말투에서 은발 냄새 남"], ["@drape", "본인이 사 줄 거면서"]] },
+  { who: "@익명", t: "[공지 아님] 규정 준수 부탁드립니다", p: "게시판 내 신입 관련 추측성 글은 자제 바랍니다. 이상입니다.", cm: [["@nightjar", "서기장님 계정 따로 파셨어요?"], ["@static", "이상입니다 ㅋㅋㅋ"]] },
+  { who: "@익명", t: "[후기] 오늘 밤 피아노", p: "마감 후에 한 곡 쳤어요. 들어 준 사람이 있어서 좋았어요.", cm: [["@drape", "사장님…?"], ["@bellhop", "모른 척해 드리자"]] },
+  { who: "@익명", t: "[제보 환영] 재밌는 거 있으면", p: "흠. 크로니클 말고 여기로 줘도 돼. 신입 얘기면 더 좋고.", cm: [["@watcher", "대놓고 그 사람임"], ["@static", "흠. 으로 시작하면 그 사람임"]] },
+);
+
+// ---------- 게시판·노이즈 필터에 특별 글 끼우기 ----------
+const _boardPosts = boardPosts, _noisePosts = noisePosts;
+boardPosts = () => [...(lvHour() === 3 ? [{ ...H3_POST, fresh: true }] : []), ..._boardPosts()];
+noisePosts = () => [...(NOW() - EV.huntAt < 864e5 ? [{ ...HUNT_POST, fresh: true }] : []), ..._noisePosts()];
+
+// ---------- 돌리기 ----------
+setInterval(() => {
+  checkH3(); thirstCrisis();
+  if (!portalOn() || busyUI()) return;
+  const r = Math.random();
+  if (r < .06) tryCall();
+  else if (r < .075) hunterAlert();
+}, 60000);
+setTimeout(() => { checkDays(); checkH3(); }, 8000);
