@@ -638,7 +638,7 @@ const AMB = {
     ["야간 순찰 중이다. 별일 없지."], ["오늘 현장에서 은 탄피 나왔다. 조심해."], ["……잘 자라고. 그게 다야."]],
   maquia: [["……."], ["네 이름을 묻는 자가 있었다."], ["흠. 아직이군."], ["오늘은 아무 일도 없었다. 그게 이상하다."], ["……보고 있다."]],
 };
-// 같은 말을 되풀이하지 않게: 보낸 말은 기억해 두고, 다 쓰면 6시간 뒤에야 다시 꺼낸다
+// 같은 말을 되풀이하지 않게: 먼저 보낸 말은 기억해 두고 다시 보내지 않는다 (다 쓰면 그 사람은 먼저 연락하지 않음)
 // 먼저 오는 메시지는 전체 4분에 한 번, 같은 사람은 15분에 한 번까지만
 const AMB_GAP = 4 * 60000, AMB_GAP_EACH = 15 * 60000, AMB_RESET = 6 * 3600000;
 const ORDER = ["jin", "ruan", "anzi", "rainer", "jenis", "minos", "maquia"];
@@ -767,7 +767,6 @@ function pushMsg(id, lines, silent) {
 function ambient(silent, force) {
   if (!ST.amb) ST.amb = { seen: {}, last: 0, each: {}, reset: NOW() + AMB_RESET };
   const A = ST.amb;
-  if (NOW() >= A.reset) { A.seen = {}; A.reset = NOW() + AMB_RESET; }
   if (!force && NOW() - A.last < AMB_GAP) return false;
   // 내가 했던 말 기억 · 다른 사람한테 들은 소문이 먼저
   const sp = specialAmb(force);
@@ -1294,14 +1293,16 @@ function replyTo(id, text) {
     else {
       const tiered = TIERED[key] && TIERED[key][id] && TIERED[key][id][tier(id)];
       const pool = tiered || REPLY[id][key] || REPLY[id].fallback;
-      line = pick(pool); if (typeof line === "function") line = line(ST.th);
+      // 바로 전에 한 말과 같은 답은 피한다 (다른 답이 있을 때)
+      const alt = pool.filter(x => (typeof x === "function" ? x(ST.th) : x) !== r.lastLine);
+      line = pick(alt.length ? alt : pool); if (typeof line === "function") line = line(ST.th);
     }
   }
   out.push(line);
   // 가끔 한 줄 더 덧붙이거나, 마키아·미노스는 가끔 "……"만
   if (TAIL[id] && out.length === 1 && line !== TAIL[id] && Math.random() < .18) out.push(TAIL[id]);
   if ((id === "maquia" || id === "minos") && tier(id) === "cold" && Math.random() < .08) { out.length = 0; out.push("……"); }
-  r.lastIntent = key; r.lastText = norm; save();
+  r.lastIntent = key; r.lastText = norm; r.lastLine = out[out.length - 1]; save();
   // 읽고 한참 있다 답하는 때도 있다
   const wait = Math.random() < .15 ? rand(3000, 5000) : rand(700, 1400);
   return [out, wait];
