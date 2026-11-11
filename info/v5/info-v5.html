@@ -701,6 +701,28 @@
   .bn .info .q.one { white-space: normal; margin-right: 0; }
   .bn .info.one .tags { padding-top: 4px; }
   .bn .info .fl, .bn .info .fl i { white-space: nowrap; }
+  /* ===== v5 2차 수정 ===== */
+  .hero { height: 1200px; }
+  .hero .tagl { top: 540px; }
+  .hero .ticket { top: 820px; }
+  .hero .ticket .chips span { font-size: 16px; }
+  .hero .ticket .stub .bl { padding-left: 26px; }
+  .pred .story { width: 840px; font-size: 22px; line-height: 1.95; white-space: nowrap; }
+  .seven .head p.en { font-size: 24px; }
+  .you-tx p.sm { font-size: 24px; }
+  .descent .close { margin: 150px auto 0; padding-bottom: 90px; font-size: 26px; }
+  .descent .close b { display: inline-block; margin-top: 14px; font-size: 52px; }
+  .rh { height: 600px; }
+  .rh-in { justify-content: flex-start; padding-top: 70px; }
+  .arc { margin-top: -40px; padding: 36px 44px 40px; width: 720px; }
+  .arc-body { margin-top: 22px; gap: 30px; }
+  .fact.open { padding: 120px 0 110px; position: relative; }
+  .fact.open::before { content: ""; position: absolute; left: 50%; top: 50%; width: 860px; height: 420px; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(255,235,240,.2) 0, rgba(255,120,140,.1) 40%, transparent 70%); }
+  .you-press { font-size: 15px; white-space: nowrap; }
+  .fact.open > div { position: relative; }
+  .payroll .ft { flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .payroll .ft span { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -723,7 +745,6 @@
       <div class="small neon-b">Sure, I Drink Blood.</div>
       <div class="big bl1 neon-r">BL<span class="h">♥</span>OD</div>
       <div class="big bl2 neon-r">LINE<sup>™</sup></div>
-      <div class="kosub"><span>피는 마셔도 뱀파이어는 아닌데요</span></div>
     </div>
 
     <div class="tagl">
@@ -742,7 +763,7 @@
           <div>Learn<br>the rules<br>of the house</div>
           <div>Seven<br>predators<br>with their own reasons</div>
         </div>
-        <div class="chips"><span>다크 판타지 로맨스</span><span>리버스 하렘</span><span>적응기 · 혐관</span></div>
+        <div class="chips keep"><span>다크 판타지 로맨스</span><span>리버스 하렘</span><span>적응기 · 혐관</span></div>
       </div>
     </div>
 
@@ -758,7 +779,7 @@
     <div class="big neon-r">YOU ARE THE PREDATOR</div>
     <div class="ko">한때는, 인간이었다.</div>
   </div>
-  <p class="story">
+  <p class="story keep">
     눈을 뜬 곳은 라스베이거스. 변이 당시의 기억은 군데군데 끊겨 있다.<br>
     익숙한 거리, 매일 스치던 사람들. 모두 그대로인데 —<br>
     <b>이제 그들의 맥박이 들린다.</b> 목덜미의 혈관이 눈에 밟힌다.<br>
@@ -820,7 +841,7 @@
   <div class="head">
     <div class="eyebrow">SEVEN PREDATORS +</div>
     <h2 class="h2" style="margin-top:12px;font-family:'Playfair Display',serif;font-style:italic;font-size:46px">Seven <em>Predators</em></h2>
-    <p class="en">Some will protect you. Some will test you.<br>Some want something from you.</p>
+    <p class="en keep">Some will protect you. Some will test you.<br>Some want something from you.</p>
     <p class="ko"><span>그들은 당신의 피에 끌린다.</span><br>하지만 당신을 원하는 이유까지 같지는 않다.</p>
   </div>
   <div class="you">
@@ -833,9 +854,9 @@
       <div class="you-load"><span>SYNCING BLOOD SIGNATURE</span><div class="bar"><i></i></div><span class="pct">79%</span></div>
     </div>
     <div class="you-tx">
-      <p>변이 당시의 기억은 끊겨 있고, <b>피 향은 유난히 짙다.</b><br>누가 당신을 이렇게 만들었는지, 아무도 말해 주지 않는다.</p>
+      <p class="sm keep">변이 당시의 기억은 끊겨 있고, <b>피 향은 유난히 짙다.</b><br>누가 당신을 이렇게 만들었는지, 아무도 말해 주지 않는다.</p>
       <p class="hl">일곱 남자에게 당신은 — <em>지켜야 할 신입</em>이자, <em>위험한 변수</em>이자, <em>탐나는 무언가</em>다.</p>
-      <p>다정해 보여도 착각하지 마라. 당신을 사랑하게 된다고 해서,<br>그들이 갑자기 <b>다정하고 평범한 남자가 되지는 않는다.</b></p>
+      <p class="sm keep">다정해 보여도 착각하지 마라. 당신을 사랑하게 된다고 해서,<br>그들이 갑자기 <b>다정하고 평범한 남자가 되지는 않는다.</b></p>
     </div>
     <div class="you-press keep">▶ PRESS ANY KEY TO ENTER THE HOUSE</div>
   </div>
@@ -848,7 +869,7 @@
   <div class="head">
     <div class="eyebrow">THE HOUSE RULES · 00</div>
     <div class="big neon-r">THE DESCENT</div>
-    <p class="ko">알터로 산다는 건, 이 계단 위에 서 있다는 뜻이다.<br>그리고 계단은 아래로만 나 있다.</p>
+    <p class="ko">알터로 산다는 건,<br>언제든지 괴물이 될 수 있다는 뜻이다.</p>
   </div>
   <div class="steps">
     <div class="step">
@@ -895,7 +916,7 @@
   <div class="arc">
     <div class="arc-top"><span>HOUSE ARCHIVE · TERM 001</span><span class="neon-r">CLASSIFIED</span></div>
     <div class="arc-body">
-      <div class="arc-word">Alter<small>알터 · 공식 종족명</small></div>
+      <div class="arc-word">Alter<small>알터<br>공식 종족명</small></div>
       <p>인간은 그들을 뱀파이어라 부를지도 모른다. 하우스는 그들을 <b>알터</b>라 부른다.<br>그리고 그들은 가끔, 스스로를 <em>포식자</em>라 비웃는다.</p>
     </div>
   </div>
@@ -906,11 +927,11 @@
     <div class="stagger">
       <div class="col">
         <div class="fact"><div class="dia"><span>01</span></div><div><h4>되돌아갈 길은 없다</h4><p>변이는 되돌릴 수 없다. 몸은 그날에 멈춰 늙지 않고, 아이를 가질 수 없으며, 크게 부서지지 않는 한 죽지도 않는다. <b>인간으로 돌아가는 방법은 없다.</b></p></div></div>
-        <div class="fact"><div class="dia"><span>02</span></div><div><h4>갈증은 매일 차오른다</h4><p>흡혈은 주 1회. 하루하루 조금씩, 이능을 쓰거나 싸우면 더 빨리 오른다. <b>100%를 넘기면 폭주한다.</b></p></div></div>
+        <div class="fact"><div class="dia"><span>02</span></div><div><h4>갈증 주기</h4><p>흡혈은 주 1회. 하루하루 조금씩, 이능을 쓰거나 싸우면 더 빨리 오른다. <b>100%를 넘기면 폭주한다.</b></p></div></div>
       </div>
       <div class="col r">
         <div class="fact"><div class="dia"><span>03</span></div><div><h4>하우스의 일상</h4><p>낮엔 <b>위장 직장 근무</b>, 약 2주마다 손목 디바이스로 날아오는 임무. 거절할 수는 있다. 평가에 남을 뿐.</p></div></div>
-        <div class="fact"><div class="dia"><span>04</span></div><div><h4>철저하게 숨겨진 세계</h4><p>알터는 평범한 직업과 신분으로 인간 사회에 섞여 산다. <b>인간에게 정체가 드러나는 일은 하우스 규율 위반이다.</b></p></div></div>
+        <div class="fact"><div class="dia"><span>04</span></div><div><h4>철저한 보안</h4><p>알터는 평범한 직업과 신분으로 인간 사회에 섞여 산다. <b>인간에게 정체가 드러나는 일은 하우스 규율 위반이다.</b></p></div></div>
       </div>
       <div class="fact open"><div><h4>그리고 어딘가에서, 당신을 쫓는 사람들</h4><p>밤을 사냥하는 인간, 사냥꾼. 산 채로 잡아 오면 값이 오르는 표적 목록에,<br><b>언젠가 당신의 얼굴이 오른다.</b></p></div></div>
     </div>
@@ -994,19 +1015,19 @@
     { id: "ruan", side: true, lc: "#2a9fae", th: "th01", en: "RUAN MERCER", ko: "루안", code: "ARC", ac: "#3fd6e8",
       role: "하우스 소속 프리랜서 해결사", first: "거슬리는 신입",
       quote: "귀찮게 됐네. ...그러니까 내 눈앞에서 벗어나지 마.",
-      d: "규율보다 자기 판단이 먼저인 남자. 지키는 것과 가두는 것을 잘 구분하지 못한다.<br>한 번 '내 사람'이 되면, <b>놓아줄 생각이 없다.</b>",
+      d: "규율보다 <b>자기 판단</b>이 먼저인 남자.",
       x: "사람 하나 치우는 데 3초면 충분하다. 망설이는 건 그게 당신 눈앞일 때뿐이다.",
       tags: ["반말", "행동파", "독점욕"] },
     { id: "jenis", low: true, side: true, th: "th08", en: "JENIS MILLER", ko: "제니스", code: "CHEMIST", ac: "#7d9bff",
       role: "제약회사 실권자 · 루안의 피계약자", first: "흥미로운 표본",
       quote: "실례지만 한 번만 더 채혈하겠습니다.<br>당신 수치는 설명이 안 되거든요.",
-      d: "흠잡을 데 없는 존댓말 뒤의 냉정한 계산. 인간의 몸도, 당신의 피도 그에겐 먼저 분석할 대상이다.<br>예측이 빗나가는 순간부터 <b>집요해진다.</b>",
-      x: "인간의 혈액은 그에게 원료다. 공급 장부의 숫자 하나하나가 누군가의 팔이라는 걸, 굳이 떠올리지 않는다.",
+      d: "예측이 빗나가는 순간부터 <b>집요해진다.</b>",
+      x: "인간의 혈액은 그에게 원료다. 공급 장부의 숫자 하나하나가 누군가의 육체라는 걸, 굳이 떠올리지 않는다.",
       tags: ["존댓말", "통제욕", "연하미"] },
     { id: "anzi", low: true, side: true, th: "th03", en: "ANZI CROSS", ko: "안지", code: "INFORMER", ac: "#f2c14e",
       role: "크로니클 발행인 · 정보 브로커", first: "재미있는 구경거리",
       quote: "어라, 화났어? 계속해 봐.<br>지금 그 표정, 꽤 볼만하거든.",
-      d: "도시에서 가장 오래 산 최선임. 남이 당황하고 화내는 얼굴을 구경하듯 즐긴다.<br>장난이 어디서부터 상처가 되는지, <b>일부러 그 선 위를 걷는다.</b>",
+      d: "도시에서 가장 오래 산 최선임. 남이 당황하고 화내는 얼굴을 <b>구경하듯 즐긴다.</b>",
       x: "사람이 죽어 가는 현장에서도 먼저 메모부터 한다. 구할지 말지는 그다음에 정한다.",
       tags: ["능청", "최선임", "도발"] },
     { id: "minos", low: true, side: true, br: [380, 530], sx: 320, th: "th07", en: "MINOS HAZE", ko: "미노스", code: "TRACER", ac: "#d9853b",
@@ -1018,19 +1039,19 @@
     { id: "rainer", low: true, side: true, th: "th04", en: "RAINER DE LAURENT", ko: "레이너", code: "MAESTRO", ac: "#d0344f",
       role: "카페 벨 에포크 사장 · 하우스 중재자", first: "귀여운 불청객",
       quote: "착하기도 해라.<br>그래도 거긴 넘으면 안 되는 선이에요.",
-      d: "당신이 일하게 될 카페의 주인. 다정한 얼굴 그대로 서늘한 결정을 내리고, 죄책감은 남기지 않는다.<br>그 다정함이 가끔, <b>조금 지나치게 꼼꼼하다.</b>",
+      d: "다정한 얼굴 그대로 <b>서늘한 결정</b>을 내리고, 죄책감은 남기지 않는다.",
       x: "아끼는 것은 망가지기 전에 가둬 두는 게 사랑이라고 믿는다. 누군가의 비명도, 그의 귀엔 한 소절의 연주다.",
       tags: ["우아함", "카페 사장", "다정한 통제"] },
     { id: "jin", low: true, side: true, sx: 320, th: "th02", en: "JIN WEBER", ko: "진", code: "DISPATCHER", ac: "#c8d2e8",
       role: "하우스 총괄 서기장 · 디스패처", first: "관리 대상",
       quote: "……놓지 마세요.<br>아직 측정이 안 끝났습니다.",
-      d: "이 세계의 규칙을 가르치는 사람이자, 규칙 그 자체. 질서를 위해서라면 당신의 의사쯤은 뒤로 미룬다.<br>근무 중엔 칼 같은 경어, <b>사석에선 반말.</b>",
+      d: "이 세계의 규칙을 가르치는 사람이자, 규칙 그 자체. <b>질서를 위해서</b>라면 당신의 의사쯤은 뒤로 미룬다.",
       x: "질서에 필요하다면 상대의 정신에 손을 댄다. 인간 목격자든 동료든. 서류에는 '처리 완료' 한 줄만 남는다.",
       tags: ["온오프", "서기장", "원칙주의"] },
     { id: "maquia", side: true, lc: "#2ea476", th: "th05", en: "MAQUIA AL-FARUQ", ko: "마키아", code: "SPHINX", ac: "#3ddc97",
       role: "하우스 최상위 전략가 · 지하의 판사", first: "쓸 만한 미끼",
       quote: "당신을 미끼로 쓰겠다. 대신 그 일이 끝날 때까지, 아무도 당신 털끝 하나 못 건드린다.", one: true,
-      d: "말보다 행동으로 사람을 잰다. 감추는 게 있다면 끝까지 파고든다.<br>모든 수를 읽던 사람이 <b>읽지 못하는</b> 변수.",
+      d: "말보다 행동으로 사람을 잰다. 감추는 게 있다면 끝까지 <b>파고든다.</b>",
       x: "자백은 기다리는 게 아니라 받아 내는 것이다. 바늘 하나로 환각 속에 가둬, 스스로 다 털어놓을 때까지.",
       tags: ["단문", "전략가", "심판자"] },
   ];
