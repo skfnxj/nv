@@ -804,6 +804,12 @@
   .payroll .grid b { font-size: 46px; }
   .payroll .grid b em { font-size: 16px; }
   .payroll .ft { margin-top: 34px; font-size: 17px; }
+  /* ===== v5 5차 ===== */
+  .descent .close b { position: relative; z-index: 0; }
+  .descent .close b::before { content: ""; position: absolute; z-index: -1; left: 50%; top: 50%; width: 560px; height: 260px; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(255,90,110,.34) 0, rgba(255,36,56,.16) 38%, transparent 70%); }
+  .arc-word small { display: block; width: 260px; margin: 22px auto 0; padding: 14px 0 0; border: 0; border-radius: 0; border-top: 1.5px solid #ff3d52;
+    box-shadow: 0 -6px 10px -8px rgba(255,36,56,.9); font-size: 16px; letter-spacing: .14em; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -997,7 +1003,7 @@
   <div class="arc keep">
     <div class="arc-top"><span>HOUSE ARCHIVE · TERM 001</span><span class="neon-r">CLASSIFIED</span></div>
     <div class="arc-body">
-      <div class="arc-word">Alter<small>알터<br>공식 종족명</small></div>
+      <div class="arc-word">Alter<small>알터 · 공식명</small></div>
       <p>인간은 그들을 뱀파이어라 부를지도 모른다.<br>하우스는 그들을 <b>알터</b>라 부른다.<br>그리고 그들은 가끔, 스스로를 <em>포식자</em>라 비웃는다.</p>
     </div>
   </div>
