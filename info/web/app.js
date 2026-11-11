@@ -1400,16 +1400,16 @@ const PHOTO = {
 };
 // 가까움(60): 디바이스가 우연히 녹음해서 보내 버린 일상 한 토막 [앞말, 한국어 번역, 알아챈 뒤 하는 말, 실제 녹음(영어, voice/<캐릭터>.mp3)]
 const VOICE = {
-  ruan: [[], "좀. 걸려라. ……고물 같으니. 알았어, 알았다고. 그럼 끌고 가 줄게.", ["……방금 뭐 보냈냐.", "지워."],
-    "Come on. Start. ...Piece of junk. Fine. Fine. I'll walk you home, then."],
-  anzi: [[], "아니, 아니. 이름은 필요 없어. 새벽 세 시에 어디 있었는지가 필요하지. ……어. 알아내면 전화해. 흠. 이거 재밌어지겠네.", ["흠. 들었어?", "……기사 나가기 전까진 비밀이야."],
-    "No, no. I don't need his name. I need where he was at three in the morning. ...Yeah. Call me when you have it. Hm. This is gonna be good."],
+  ruan: [[], "좀, 걸려라. 좀. ……고물 같으니. 알았어, 알았다고. 그럼 끌고 가 줄게.", ["……방금 뭐 보냈냐.", "지워."],
+    "Come on, start. Come on. ...Piece of junk. Fine. Fine. I'll walk you home, then."],
+  anzi: [[], "아니, 아니, 아니. 이름은 필요 없어. 새벽 세 시에 어디 있었는지가 필요하지. ……어. 알아내면 전화해. 오, 이거 재밌어지겠네.", ["흠. 들었어?", "……기사 나가기 전까진 비밀이야."],
+    "No, no, no. I don't need his name. I need where he was at three in the morning. ...Yeah. Call me when you have it. Oh, this is gonna be good."],
   jenis: [[], "아홉 시 건은 내일로 옮겨 줘요. ……아뇨, 괜찮아요. 잠을 못 잤을 뿐이에요. 그리고 커피요. 블랙으로. 고마워요.", ["……녹음이 켜져 있었네요.", "못 들은 걸로 해 주세요."],
-    "Move the nine o'clock to tomorrow. ...No, I'm fine. I just haven't slept. And coffee. Black. Thank you."],
+    "Move the nine o'clock to tomorrow. ...No, no, I'm fine. I just haven't slept. And coffee. Black. Thank you."],
   minos: [[], "본부, 4호차. 현장 정리됐다. ……아니. 목격자 없다. 알았다. 복귀한다. ……커피부터.", ["……주머니에서 눌렸다.", "신경 쓰지 마."],
     "Dispatch, unit four. Scene's clear. ...No. No witnesses. Copy. Heading back. ...Coffee first."],
   rainer: [[], "문 닫았어요, 미안해요. ……아, 당신이구나. 들어와요, 들어와. 편한 데 앉아요. 따뜻한 거 하나 만들어 줄게요.", ["음… 이게 왜 갔지.", "……단골손님이에요. 오해하지 마요."],
-    "We're closed, sorry. ...Oh. It's you. Come in, come in. Sit wherever you like. I'll make you something warm."],
+    "We're closed, sorry... oh. It's you. Come in, come in. Sit wherever you like. I'll make you something warm."],
   jin: [[], "또군요. 이 보고서…… 세 시간 늦게 올렸습니다. 또. 변명은 필요 없습니다. 제 책상 위에. 해 뜨기 전까지.", ["……잘못 전송됐습니다.", "당신한테 한 말 아닙니다."],
     "Again. You filed this report... three hours late. Again. I don't want excuses. On my desk. Before sunrise."],
   maquia: [[], "혼자 왔군. ……좋다. 곁에 앉아라. 밤은 길다.", ["……들었나.", "잊어라."],
