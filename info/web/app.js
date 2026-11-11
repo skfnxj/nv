@@ -165,8 +165,7 @@ const BGM = {
     else this.pad(t, notes, barLen, this.mode === "ux" ? 650 : 1100);
     const walk = this.mode === "ux" ? [0, 0, 7, 0] : corp ? [0, 7, 12, 7] : [0, 7, 12, 10];
     walk.forEach((iv, i) => this.pluck(t + i * beat, root + 12 + iv, (i ? .22 : .32) * (corp ? .7 : 1), beat * .9));
-    // 브러시는 아주 옅게 (높은 쉬익 소리가 폰에선 지직거림처럼 들린다)
-    for (let i = 0; i < 8; i++) if (i % 2) this.brush(t + i * beat / 2, corp ? .008 : .015); else if (i === 2 || i === 6) this.brush(t + i * beat / 2, corp ? .012 : .025);
+    // 브러시(칙칙 소리)는 가스레인지 점화음처럼 들려서 뺐다
     if (corp) { // 코드음에서 고른 맑은 피아노 음을 한 마디에 서너 개, 위로 올라가는 모양으로
       const pick = [...notes].sort(() => Math.random() - .5).slice(0, rand(3, 4)).sort((a, b) => a - b);
       pick.forEach((m, k) => this.vibe(t + beat * (k + (k % 2 ? .5 : 0)), m + 12, .05));
