@@ -1400,20 +1400,20 @@ const PHOTO = {
 };
 // 가까움(60): 음성 메시지 한 통 [보내기 전 말, 녹음 내용(한국어 번역), 보낸 뒤 말, 실제 녹음(영어, voice/<캐릭터>.mp3)]
 const VOICE = {
-  ruan: [["타자 치기 귀찮다."], "……어. 나다. 할 말은 없는데. 그냥 걸어 봤어. ……끊는다.", [],
-    "...Yeah. It's me. Got nothing to say. Just... called. ...I'm hanging up."],
-  jenis: [["손이 바빠서요."], "제니스예요. 회의 끝나고 복도에서 녹음하는 중이에요. ……목소리로 하니까 좀 이상하네요. 잘 자요.", [],
-    "Hi, it's Jenis. I'm recording this in the hallway after the meeting. ...It feels a little strange, doing this out loud. Sleep well."],
-  minos: [["운전 중이다."], "……미노스다. 순찰차 안이다. 별일 없다. ……문 잠그고 자라.", [],
-    "...It's Minos. I'm in the patrol car. Nothing happened. ...Lock your door, and get some sleep."],
-  rainer: [["음… 들어 볼래요?"], "레이너예요. 가게 닫았어요. 피아노 앞에 앉았는데…… 오늘은 목소리만요. ……잘 자요.", [],
-    "It's Rainer. I've closed up. I'm sitting at the piano... but tonight, just my voice. ...Good night."],
-  anzi: [["이번엔 글 말고."], "흠. 안지. 녹음 버튼 눌렀으니까 아무 말이나 할게. ……아니다. 그냥 목소리 남기고 싶었어. 답장해.", [],
-    "Hm. Anzi. I hit record, so I'll just say whatever. ...Nah. I just wanted to leave you my voice. Text me back."],
-  jin: [["……텍스트로 남기기 애매해서."], "……진입니다. 업무 보고는 아니고. ……퇴근했어. 그 말 하려고.", [],
-    "...This is Jin. It's not a work report. ...I'm off now. That's all I wanted to say."],
-  maquia: [[], "……마키아다. …… ……들었으면 됐다.", ["……."],
-    "...It's Maquia. ... ... If you heard this, that's enough."],
+  ruan: [["타자 치기 귀찮다."], "……어. 나다. 할 말은 딱히 없는데. 그냥…… 걸고 싶었어. 끊는다.", [],
+    "...Hey. It's me. Don't really have anything to say. Just... wanted to call. Hanging up."],
+  jenis: [["손이 바빠서요."], "제니스예요. 복도예요, 회의 방금 끝났어요. ……소리 내서 말하니까 좀 이상하네요. 잘 자요. 진짜로요.", [],
+    "Hi. It's Jenis. I'm in the hallway. The meeting just ended. ...It's strange, hearing myself say this out loud. Sleep well. Really."],
+  minos: [["운전 중이다."], "……미노스다. 차 안이다. 오늘 밤은 별일 없었다. ……문 잠가라. 자고.", [],
+    "...Minos. I'm in the car. Nothing happened tonight. ...Lock your door. Get some sleep."],
+  rainer: [["음… 들어 볼래요?"], "나예요. 레이너. 가게 닫았어요…… 피아노 앞에 앉아 있어요. 근데 오늘 밤은, 목소리만요. ……잘 자요.", [],
+    "It's me. Rainer. Closed up for the night... I'm sitting at the piano. But tonight, just my voice. ...Good night."],
+  anzi: [["이번엔 글 말고."], "흠. 안지야. 녹음 버튼 벌써 눌렀으니까…… 아무 말이나 할게. ……아니다. 됐어. 그냥 내 목소리 들려주고 싶었어. 답장해.", [],
+    "Hm. Anzi here. I already hit record, so... I'll just say whatever. ...No. Never mind. I just wanted you to hear my voice. Text me back."],
+  jin: [["……텍스트로 남기기 애매해서."], "……진입니다. 업무 보고 아니고. ……이제 퇴근했어. 그게 다야. 그 말 하고 싶었어.", [],
+    "...This is Jin. This isn't a work report. ...I'm off the clock now. That's all. I just wanted to tell you that."],
+  maquia: [[], "마키아다. …… 들었으면…… 그걸로 됐다.", ["……."],
+    "It's Maquia. ... If you heard this... that's enough."],
 };
 function tryVoice(id) {
   const r = REL(id), V = VOICE[id];
