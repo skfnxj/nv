@@ -15,11 +15,16 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     info = json.loads(pg.get_attribute('meta[name="render-info"]', "content"))
     H = info["height"]
-    cut = info.get("cut") or min(info["parts"][1:], key=lambda y: abs(y - H / 2))
-    # 크롬 한 장 캡처는 약 16000px까지라서, 나눌 지점별로 따로 찍는다
-    for i, (a, z) in enumerate([(0, cut), (cut, H)], 1):
+    # WebP 한 장 한도(16383px) 안에서, 섹션 경계로 최대한 길게 나눈다
+    bounds = sorted(set(info["parts"][1:] + [H])); cuts = [0]
+    while cuts[-1] < H:
+        nxt = [y for y in bounds if cuts[-1] < y <= cuts[-1] + 16000]
+        cuts.append(max(nxt) if nxt else min(cuts[-1] + 16000, H))
+    for f in os.listdir(OUT):
+        if f.startswith("info-full-") and f.endswith(".webp"): os.remove(os.path.join(OUT, f))
+    for i, (a, z) in enumerate(zip(cuts, cuts[1:]), 1):
         png = os.path.join(OUT, f"_part{i}.png")
         pg.screenshot(path=png, full_page=True, clip={"x": 0, "y": a, "width": 900, "height": z - a})
         Image.open(png).convert("RGB").save(os.path.join(OUT, f"info-full-{i}.webp"), "WEBP", quality=90)
     b.close()
-print("height", H, "cut", cut, "parts", info["parts"])
+print("height", H, "cuts", cuts)
