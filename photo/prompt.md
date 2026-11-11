@@ -20,7 +20,7 @@
 
 **보내는 때 (11/11):** 익숙함(30)에 사물·풍경 사진, 각별함(85)에 셀카예요.
 - 루안·제니스·미노스: 익숙함 `ruan`·`jenis`·`minos`(풍경), 각별함 `ruan2`·`jenis2`·`minos02`(셀카)
-- 레이너·안지·진·마키아: 익숙함 `rainer1`·`anzi1`·`jin1`·`maquia1`(풍경, **아직 없음**, 프롬프트는 맨 아래), 각별함 `rainer`·`anzi`·`jin`·`maquia`(셀카)
+- 레이너·안지·진·마키아: 익숙함 `rainer1`·`anzi1`·`jin1`·`maquia1`(풍경, 11/11 추가, 프롬프트는 맨 아래), 각별함 `rainer`·`anzi`·`jin`·`maquia`(셀카)
 
 | 셀카 | 보내며 하는 말 |
 |---|---|
@@ -83,7 +83,7 @@ a composed selfie by a tall window at night, a marble chessboard with a half-fin
 
 ---
 
-## 익숙함 풍경 사진 (11/11 추가, 아직 없음)
+## 익숙함 풍경 사진 (11/11 추가)
 
 사람 없이 찍은 휴대폰 사진이에요. 캐릭터 기본은 붙이지 않고, 그림체 고정 + 아래 장면만 써요. 세로 3:4.
 

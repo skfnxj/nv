@@ -1811,9 +1811,16 @@ const NOISE_POOL = [
     cm: [["익명", "맞음 진짜는 송곳니도 없을걸"], ["익명", "↑ 너 뭐 아냐?"]], risk: ["낮음", "risk-l", "농담 · 댓글 하나만 주의"] },
 ];
 function noisePosts() { return [...(ST.extraNoise || []).map(i => ({ ...NOISE_POOL[i], fresh: true })), ...NOISE_LOCAL]; }
+// 새 제보가 위에 붙는다. 다 나왔으면 제일 오래된 제보를 내리고, 내려갔던 제보 중 하나가 다시 올라온다 (계속 순환)
+const NOISE_SHOW = 6; // 기본 3건 + 새 제보 최대 6건
 function addNoise() {
   ST.extraNoise = ST.extraNoise || [];
-  const left = NOISE_POOL.map((_, i) => i).filter(i => !ST.extraNoise.includes(i));
+  let left = NOISE_POOL.map((_, i) => i).filter(i => !ST.extraNoise.includes(i));
+  if (!left.length || ST.extraNoise.length >= NOISE_SHOW) {
+    const out = ST.extraNoise.pop();
+    if (ST.noiseOk && out != null) delete ST.noiseOk["n" + NOISE_POOL[out].t]; // 다시 올라오면 새 제보처럼 확인 안 한 상태로
+    left = NOISE_POOL.map((_, i) => i).filter(i => !ST.extraNoise.includes(i) && i !== out);
+  }
   if (!left.length) return false;
   ST.extraNoise.unshift(left[rand(0, left.length - 1)]); save(); renderUX();
   return true;
