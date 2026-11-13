@@ -1388,14 +1388,14 @@ function boardMention(t) {
 }
 // 사진 메시지 (이미지가 올라와 있을 때만 보낸다)
 // 루안·제니스·미노스는 가까움에 찍은 것, 각별함에 셀카. 나머지는 각별함에 한 장
-// 익숙함(30): 사물·풍경 사진 / 각별함(85): 셀카. 파일이 아직 없으면 올라올 때까지 기다린다
+// 익숙함(30): 사물·풍경 사진 / 가까움(60): 음성 메시지 몇 분 뒤 일상 사진 / 각별함(85): 셀카. 파일이 아직 없으면 올라올 때까지 기다린다
 const PHOTO = {
-  ruan: { warm: ["ruan", ["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]], bond: ["ruan2", ["어디냐고 물어볼까 봐."], ["……여기."]] },
-  jenis: { warm: ["jenis", ["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]], bond: ["jenis2", ["편지 대신이에요."], ["……한 줄은 썼어요."]] },
-  minos: { warm: ["minos", ["끝났다. 다이너."], ["……네 자리 비어 있다."]], bond: ["minos02", ["……이렇게 찍는 거 맞냐."], ["지우지 마라."]] },
-  rainer: { warm: ["rainer1", ["마감했어요."], ["……컵 하나는 당신 거로 남겨 뒀어요."]], bond: ["rainer", ["뉴올리언스 왔어요. 비 와요."], ["문 앞 화분, 아직 살아 있더라고요."]] },
-  anzi: { warm: ["anzi1", ["내일 1면 교정본."], ["……아직 아무도 못 본 거야."]], bond: ["anzi", ["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]] },
-  jin: { warm: ["jin1", ["오늘 처리한 서류입니다."], ["……보고는 아닙니다. 그냥."]], bond: ["jin", ["새로 들였어."], ["……같이 들을 거면 와."]] },
+  ruan: { warm: ["ruan", ["새벽에 달리다 찍었다."], ["……다음엔 뒤에 타."]], close: ["ruan5", ["그 고물, 고치는 중."], ["……다 고치면 연락한다."]], bond: ["ruan2", ["어디냐고 물어볼까 봐."], ["……여기."]] },
+  jenis: { warm: ["jenis", ["책상 정리하다가요."], ["……아직 한 줄도 못 썼어요."]], close: ["jenis3", ["오늘 마지막 차트까지 봤어요."], ["……안경 벗으니까 이제 좀 졸리네요."]], bond: ["jenis2", ["편지 대신이에요."], ["……한 줄은 썼어요."]] },
+  minos: { warm: ["minos", ["끝났다. 다이너."], ["……네 자리 비어 있다."]], close: ["minos5", ["비번이다."], ["……여기 커피는 마실 만하다."]], bond: ["minos2", ["……이렇게 찍는 거 맞냐."], ["지우지 마라."]] },
+  rainer: { warm: ["rainer1", ["마감했어요."], ["……컵 하나는 당신 거로 남겨 뒀어요."]], close: ["rainer2", ["꽃 들어왔어요."], ["음… 가게에 두긴 아까워서요. 한 다발은 당신 거예요."]], bond: ["rainer", ["뉴올리언스 왔어요. 비 와요."], ["문 앞 화분, 아직 살아 있더라고요."]] },
+  anzi: { warm: ["anzi1", ["내일 1면 교정본."], ["……아직 아무도 못 본 거야."]], close: ["anzi2", ["마감 끝. 편집국에 나 혼자야."], ["흠, 의자 하나 비는데."]], bond: ["anzi", ["1면 사진 아님. 그냥 찍었어."], ["흠. 저장해 둬도 돼."]] },
+  jin: { warm: ["jin1", ["오늘 처리한 서류입니다."], ["……보고는 아닙니다. 그냥."]], close: ["jin3", ["자료실 정리하다 나온 겁니다."], ["……오래된 사진이라 못 버렸어."]], bond: ["jin", ["새로 들였어."], ["……같이 들을 거면 와."]] },
   maquia: { warm: ["maquia1", ["……."], ["여기 자주 온다."]], bond: ["maquia", ["네 차례다."], ["……서두를 필요는 없다."]] },
 };
 // 가까움(60): 디바이스가 우연히 녹음해서 보내 버린 일상 한 토막 [앞말, 한국어 번역, 알아챈 뒤 하는 말, 실제 녹음(영어, voice/<캐릭터>.mp3)]
@@ -1424,21 +1424,42 @@ function tryVoice(id) {
   r.voice = true; save();
   pushMsg(id, [...V[0], `VOICE:${id}|${V[1]}`]);
   if (V[2].length) setTimeout(() => pushMsg(id, V[2]), rand(20000, 35000)); // 잘못 보낸 걸 조금 뒤에 알아챈다
+  setTimeout(() => tryPhoto(id), rand(180000, 300000)); // 몇 분 뒤 가까움 사진
 }
 function tryPhoto(id) {
   const r = REL(id), P = PHOTO[id]; if (!P) return;
   // 예전 저장분: 각별함 사진 하나를 받았던 사람은 첫 사진을 받은 걸로
   if (!r.photos) { r.photos = {}; if (r.photo) r.photos[Object.keys(P)[0]] = true; }
-  // 예전 저장분: 가까움 사진(close)은 이제 익숙함 사진(warm)
-  if (r.photos.close) { r.photos.warm = true; delete r.photos.close; save(); }
-  const st = Object.keys(P).find(k => !r.photos[k] && TIER_N[tier(id)] >= TIER_N[k]);
+  // 예전 저장분: 가까움 사진(close)은 이제 익숙함 사진(warm) — 한 번만 바꾼다 (11/13부터 close는 가까움 새 사진)
+  if (!r.pv) { if (r.photos.close) { r.photos.warm = true; delete r.photos.close; } r.pv = 2; save(); }
+  const due = k => !r.photos[k] && TIER_N[tier(id)] >= TIER_N[k] && (k !== "close" || r.voice); // 가까움 사진은 음성 메시지 다음
+  const st = Object.keys(P).find(due);
   if (!st) return;
   const [file, pre, post] = P[st], src = `../../photo/${file}.webp`, im = new Image();
   im.onload = () => {
     if (r.photos[st]) return; r.photos[st] = true; save();
     pushMsg(id, [...pre, "IMG:" + src, ...post]);
-    if (Object.keys(P).some(k => !r.photos[k] && TIER_N[tier(id)] >= TIER_N[k])) setTimeout(() => tryPhoto(id), rand(60000, 120000));
+    if (Object.keys(P).some(due)) setTimeout(() => tryPhoto(id), rand(60000, 120000));
   };
+  im.src = src;
+}
+// 이벤트 사진 — 통화(call)·갈증 위기에서 피를 준 뒤(crisis)·사냥꾼 경보(hunt)·DAY 7/30(anniv)·질투(jeal)·새벽 3시(h3). 사람·이벤트마다 한 번
+const EXTRA = {
+  ruan: { call: ["ruan3", ["끊고 나니까 잠이 안 온다."], ["……네 탓이다."]], hunt: ["ruan4", ["네 거처 앞이다."], ["……나오지 마. 보고만 있을 거니까."]],
+    crisis: ["ruan6", ["……물린 데."], ["멀쩡하다. 묻지 마."]] },
+  jenis: { hunt: ["jenis4", ["벨 에포크 앞이에요."], ["오시면 바로 안으로 들어가요. 제가 있을게요."]] },
+  jin: { jeal: ["jin2", ["예약은 2인이었습니다."], ["……업무상 식사입니다."]] },
+  anzi: { anniv: ["anzi3", ["흠, 기념이니까."], ["여기, 아무한테도 안 알려 준 데야. ……기사로도."]] },
+  minos: { call: ["minos4", ["끊고 한 대."], ["……끊으려고 했는데."]], hunt: ["minos3", ["옥상이다. 네 거처 보인다."], ["……밤새 여기 있는다."]] },
+  rainer: { call: ["rainer4", ["끊고 나와 봤어요."], ["음… 같은 달 보고 있나 해서요."]], anniv: ["rainer3", ["기념일엔 장부터 봐야죠."], ["오늘 저녁, 가게로 와요."]],
+    jeal: ["rainer5", [], ["……창가 자리, 비워 뒀어요."]] },
+  maquia: { h3: ["maquia2", ["……."], ["아무도 들인 적 없는 방이다.", "사진으로는, 네가 처음이다."]] },
+};
+function extraPhoto(id, k) {
+  const X = EXTRA[id] && EXTRA[id][k], r = REL(id); r.xph = r.xph || {};
+  if (!X || r.xph[k]) return;
+  const [file, pre, post] = X, src = `../../photo/${file}.webp`, im = new Image();
+  im.onload = () => { if (r.xph[k]) return; r.xph[k] = true; save(); pushMsg(id, [...pre, "IMG:" + src, ...post]); };
   im.src = src;
 }
 setTimeout(() => ORDER.forEach(id => tryPhoto(id)), 15000);
@@ -2192,6 +2213,7 @@ function checkH3() {
   renderUX();
   const left = H3_MAQ.map((_, i) => i).filter(i => !EV.h3seen.includes(i));
   if (left.length) { const i = left[rand(0, left.length - 1)]; EV.h3seen.push(i); save(); later(() => pushMsg("maquia", H3_MAQ[i]), 6000, 12000); }
+  if (TIER_N[tier("maquia")] >= 2) later(() => extraPhoto("maquia", "h3"), 40000, 70000); // 가까움부터: 안쪽 방 사진
 }
 
 // ---------- 2. 긴급 호출 ----------
@@ -2235,6 +2257,7 @@ function startCall(id) {
     if (duck && BGM.on) BGM.master.gain.setTargetAtTime(.75, BGM.ctx.currentTime, .5);
     REL(id).bonus = (REL(id).bonus || 0) + 3;
     end(`📞 음성 통화 · 0:${String(sec).padStart(2, "0")}`);
+    later(() => extraPhoto(id, "call"), 40000, 70000);
     renderDevices();
   };
 }
@@ -2263,7 +2286,7 @@ function thirstCrisis() {
       $("#modal").className = "modal"; const pick = b.dataset.cr;
       if (pick === "none") { later(() => pushMsg("jin", ["……버티는 것도 판단입니다.", "다만 95를 넘기면 제가 직접 갑니다."]), 3000, 6000); return; }
       drink(55, 75, `${CH[pick].ko}의 피`); REL(pick).bonus = (REL(pick).bonus || 0) + 6; save(); renderDevices();
-      later(() => pushMsg(pick, AFTER[pick]), 4000, 8000);
+      later(() => pushMsg(pick, AFTER[pick]), 4000, 8000); later(() => extraPhoto(pick, "crisis"), 30000, 50000);
       const rival = ids.filter(x => x !== pick)[0]; if (rival) later(() => pushMsg(rival, ENVY[rival](CH[pick].ko)), 40000, 80000);
     });
   }, 9000, 11000);
@@ -2282,7 +2305,7 @@ $("#chatIn").addEventListener("submit", () => {
   const day = lvDay(), who = ORDER.filter(x => x !== id && TIER_N[tier(x)] >= 1 && EV.jdone[x + ">" + id] !== day).sort((a, b) => aff(b) - aff(a))[0];
   if (!who) return;
   EV.jdone[who + ">" + id] = day; save();
-  later(() => pushMsg(who, JEAL[who](CH[id].ko)), 20000, 40000);
+  later(() => pushMsg(who, JEAL[who](CH[id].ko)), 20000, 40000); later(() => extraPhoto(who, "jeal"), 60000, 90000);
 });
 
 // ---------- 6. 사냥꾼 경보 ----------
@@ -2295,7 +2318,7 @@ function hunterAlert() {
   EV.huntAt = NOW(); EV.huntN++; save(); renderUX(); glitch();
   modal(`<div class="hunt"><small>DISPATCH · PRIORITY</small><h3>⚠ 은신 지시</h3><p>당신에 대한 목격 제보가 확산 중입니다.<br>지금 위치를 벗어나 가장 가까운 하우스 거점으로 이동하십시오.</p></div>`, "hunt-m");
   later(() => pushMsg("jin", ["노이즈 필터 확인하십시오.", "당분간 단독 이동 금지입니다."]), 5000, 8000);
-  const r = topAff(["jin"]); later(() => pushMsg(r, RESCUE[r]), 25000, 40000);
+  const r = topAff(["jin"]); later(() => pushMsg(r, RESCUE[r]), 25000, 40000); later(() => extraPhoto(r, "hunt"), 60000, 90000);
   return true;
 }
 
@@ -2310,7 +2333,7 @@ function checkDays() {
     if (day < d || ST.once["day" + d]) continue;
     ST.once["day" + d] = true; save();
     addNotice(["gold", `DAY ${d}`, `신입 알터 등록 ${d}일 차 — ${n}`]);
-    const id = topAff(); later(() => pushMsg(id, T[id]), 5000, 9000);
+    const id = topAff(); later(() => pushMsg(id, T[id]), 5000, 9000); later(() => extraPhoto(id, "anniv"), 30000, 50000);
     break;
   }
 }
