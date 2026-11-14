@@ -823,6 +823,19 @@
   .night .fact.open { padding: 180px 40px 170px; }
   .survive { padding-top: 70px; }
   .survive .q { margin-top: 120px; }
+  /* 로맨스 클라이맥스: 두근거림 */
+  .survive .want { margin-top: 70px; font-family: "Noto Serif KR"; font-size: 19px; line-height: 1.9; color: var(--cream-dim); }
+  .survive .want b { color: #ff7a93; text-shadow: 0 0 6px rgba(255,90,122,.8), 0 0 18px rgba(255,36,56,.45); }
+  .survive .love { position: relative; margin: 110px auto 0; width: 640px; padding: 30px 0 70px;
+    background: radial-gradient(ellipse 55% 60% at 50% 62%, rgba(255,60,100,.22), rgba(255,36,56,.06) 55%, transparent 75%); }
+  .survive .beat { display: block; width: 600px; height: 90px; margin: 0 auto; filter: drop-shadow(0 0 4px #ff5a7a) drop-shadow(0 0 14px rgba(255,36,56,.7)); }
+  .survive .bpm { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 12px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: .25em; color: rgba(241,232,218,.45); }
+  .survive .bpm i { font-style: normal; color: #ff5a7a; }
+  .survive .bpm b { color: #ff5a7a; font-weight: 700; text-shadow: 0 0 6px rgba(255,90,122,.9); }
+  .survive .love .q { margin-top: 34px; font-family: "Noto Serif KR"; font-weight: 700; font-size: 34px; line-height: 1.55; letter-spacing: .04em; color: #fff;
+    text-shadow: 0 0 2px rgba(255,255,255,.6), 0 0 22px rgba(255,90,122,.35); }
+  .survive .love .q em { font-style: normal; color: #ff5a7a; font-size: 42px;
+    text-shadow: 0 0 4px rgba(255,140,160,.9), 0 0 18px #ff2a55, 0 0 46px rgba(255,36,80,.7); }
 </style>
 </head>
 <body>
@@ -1053,7 +1066,13 @@
 <section class="survive grain" data-part>
   <p class="close">살아남는 법은<br>아무도 친절하게 알려 주지 않는다.<br><b>직접 부딪쳐 배울 뿐.</b></p>
   <p class="close2">누구에게도 길들여지지 않은 포식자들,<br>그리고 <b>그들의 단 하나뿐인 예외.</b></p>
-  <p class="q">괴물이 되어서도, 사랑은 허락될까?</p>
+  <p class="want">일곱 포식자가,<br>저마다 다른 이유로 <b>이 피를 원한다.</b></p>
+  <div class="love">
+    <svg class="beat" viewBox="0 0 600 90" aria-hidden="true"><defs><linearGradient id="bg2" x1="0" x2="1"><stop offset="0" stop-color="#ff5a7a" stop-opacity="0"/><stop offset=".3" stop-color="#ff5a7a"/><stop offset=".7" stop-color="#ff2438"/><stop offset="1" stop-color="#ff2438" stop-opacity="0"/></linearGradient></defs>
+      <path d="M0 55 H190 L204 55 L214 20 L226 82 L238 6 L252 70 L262 55 H330 L342 55 L352 26 L364 78 L376 2 L390 72 L400 55 H600" fill="none" stroke="url(#bg2)" stroke-width="3" stroke-linejoin="round"/></svg>
+    <div class="bpm"><span>BPM 61</span><i>→</i><b>BPM 118</b></div>
+    <p class="q">괴물이 되어서도,<br><em>사랑</em>은 허락될까?</p>
+  </div>
 </section>
 
 <!-- 7. TWO WAYS TO WAKE UP -->
