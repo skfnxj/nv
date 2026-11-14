@@ -836,6 +836,10 @@
     text-shadow: 0 0 2px rgba(255,255,255,.6), 0 0 22px rgba(255,90,122,.35); }
   .survive .love .q em { font-style: normal; color: #ff5a7a; font-size: 42px;
     text-shadow: 0 0 4px rgba(255,140,160,.9), 0 0 18px #ff2a55, 0 0 46px rgba(255,36,80,.7); }
+  /* 질문 아래로 떨어져 쌓이는 동백 */
+  .survive .petals { position: relative; display: block; width: 900px; margin: -90px auto -170px;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%), linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+    -webkit-mask-composite: source-in; mask-composite: intersect; }
 </style>
 </head>
 <body>
@@ -1073,6 +1077,7 @@
     <div class="bpm"><span>BPM 61</span><i>→</i><b>BPM 118</b></div>
     <p class="q">괴물이 되어서도,<br><em>사랑</em>은 허락될까?</p>
   </div>
+  <img class="petals" src="../p09.webp" alt="">
 </section>
 
 <!-- 7. TWO WAYS TO WAKE UP -->
