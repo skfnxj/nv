@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,900&family=Cinzel:wght@400;700&family=Pinyon+Script&family=Noto+Serif+KR:wght@900&family=Noto+Sans+KR:wght@500;700;900&family=Black+Han+Sans&family=Hahmlet:wght@900&family=Do+Hyeon&family=Gugi&family=Song+Myung&display=block" rel="stylesheet">
+<style>
+  @font-face { font-family: "Dot"; src: local("Arial"); unicode-range: U+00B7; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 624px; height: 936px; overflow: hidden; background: #070a14; }
+  .card { position: relative; width: 624px; height: 936px; overflow: hidden; color: #f1e8da; font-family: "Dot", "Noto Sans KR", sans-serif; }
+
+  /* 그림: 832×1216 → 높이 맞춰 640×936, 좌우 8px 잘림 */
+  .art { position: absolute; left: -8px; top: 0; width: 640px; height: 936px; }
+  .art img { width: 100%; height: 100%; display: block; filter: saturate(1.15) contrast(1.05); }
+  /* 11/20: 딤(tone·shade)·텍스처(scan·grain) 끄고 얼굴 클로즈업 */
+  .art { overflow: hidden; }
+  .art img { position: absolute; width: auto; height: auto; }
+  .tone, .shade, .scan, .grain { display: none; }
+  .tone { position: absolute; inset: 0; mix-blend-mode: color; opacity: .32;
+    background: linear-gradient(160deg, #ff1a2e 0 35%, #2338ff 75%, #0b1460); }
+  .shade { position: absolute; inset: 0;
+    background: linear-gradient(0deg, rgba(7,10,20,.82) 0, rgba(7,10,20,.5) 22%, rgba(7,10,20,0) 46%),
+                linear-gradient(180deg, rgba(7,10,20,.55) 0, rgba(7,10,20,0) 14%),
+                radial-gradient(120% 80% at 50% 40%, transparent 55%, rgba(7,10,20,.55)); }
+  .scan { position: absolute; inset: 0; opacity: .28;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 1px, transparent 1px 3px); }
+  .grain { position: absolute; inset: 0; opacity: .08;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .neon-r { color: #ff3d52; text-shadow: 0 0 4px rgba(255,36,56,.9), 0 0 14px rgba(255,36,56,.7), 0 0 34px rgba(255,36,56,.45); }
+  .neon-b { color: #7d9bff; text-shadow: 0 0 4px rgba(61,107,255,.9), 0 0 14px rgba(61,107,255,.7), 0 0 34px rgba(61,107,255,.45); }
+
+  /* 테두리 + 모서리 마름모 */
+  .frame { position: absolute; inset: 12px; border: 1px solid rgba(255,61,82,.55); box-shadow: 0 0 8px rgba(255,36,56,.35), inset 0 0 8px rgba(255,36,56,.2); }
+  .dia { position: absolute; width: 9px; height: 9px; background: #fff; transform: rotate(45deg); box-shadow: 0 0 6px #fff; }
+
+  /* 위 스트립 */
+  .strip { position: absolute; left: 36px; right: 36px; top: 34px; display: flex; align-items: center; gap: 14px; }
+  .strip .no { font-family: "Bodoni Moda"; font-weight: 900; font-size: 26px; line-height: 1; }
+  .strip .ln { flex: 1; height: 1.5px; background: #ff3d52; box-shadow: 0 0 6px #ff2438; }
+  .strip .ln.b { background: #7d9bff; box-shadow: 0 0 6px #3d6bff; }
+  .strip .mid { font-family: "Cinzel"; font-weight: 700; font-size: 12px; letter-spacing: .32em; color: #f1e8da; text-shadow: 0 1px 6px #000; }
+  .strip .nv { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #7d9bff; box-shadow: 0 0 10px #3d6bff, inset 0 0 8px #3d6bff;
+    display: grid; place-items: center; font-family: "Bodoni Moda"; font-weight: 900; font-size: 14px; }
+
+  .vside { position: absolute; left: 20px; top: 128px; writing-mode: vertical-rl; transform: rotate(180deg);
+    font-family: "Noto Sans KR"; font-weight: 500; font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: #7d9bff; text-shadow: 0 0 6px #3d6bff; }
+  .vname { position: absolute; right: 42px; top: 104px; writing-mode: vertical-rl; font-family: "Noto Serif KR"; font-weight: 900; font-size: 22px; letter-spacing: .12em; color: #fff;
+    text-shadow: 0 0 3px #fff, 0 0 10px #ff3d52, 0 0 22px #ff2438; }
+
+  /* 이름 */
+  .who { position: absolute; left: 42px; top: 452px; }
+  .who .script { font-family: "Pinyon Script", cursive; font-size: 66px; line-height: 1; color: #fff;
+    text-shadow: 0 0 3px #fff, 0 0 12px #ff3d52, 0 0 28px #ff2438; }
+  .who .row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .who .en { font-family: "Cinzel"; font-weight: 700; font-size: 12px; letter-spacing: .14em; color: #f1e8da; text-shadow: 0 1px 6px #000; }
+  .who .code { font-family: "Cinzel"; font-weight: 700; font-size: 11px; letter-spacing: .12em; padding: 2px 9px; border: 1.5px solid #ff3d52;
+    color: #f1e8da; box-shadow: 0 0 8px rgba(255,36,56,.6), inset 0 0 6px rgba(255,36,56,.35); background: rgba(5,7,13,.45); }
+
+  /* 제목 */
+  .ttl { position: absolute; left: 0; right: 0; top: 572px; text-align: center; }
+  .ttl .small { font-family: "Pinyon Script", cursive; font-size: 34px; line-height: 1; }
+  .ttl .k { font-family: var(--tf, "Black Han Sans"); font-weight: var(--tw, 400); color: #fff; line-height: 1.08; letter-spacing: var(--ls, 0); font-size: var(--fs, 78px); }
+  .ttl .k1 { margin-top: 12px; font-size: calc(var(--fs, 78px) * .82); text-shadow: 0 0 3px #fff, 0 0 12px #ff3d52, 0 0 26px #ff2438, 0 0 48px rgba(255,36,56,.65); }
+  .ttl .k2, .ttl .k3 { text-shadow: 0 0 3px #fff, 0 0 12px #7d9bff, 0 0 26px #3d6bff, 0 0 48px rgba(61,107,255,.65); }
+  .dim .ttl .k { color: rgba(255,255,255,.62); text-shadow: 0 0 2px rgba(255,255,255,.4); }
+  .dim2 .ttl .k3 { color: rgba(255,255,255,.62); text-shadow: 0 0 2px rgba(255,255,255,.4); }
+
+  /* ===== 제목 분산 배치 ===== */
+  .L1 .ttl, .L2 .ttl, .L3 .ttl { position: static; }
+  .L1 .ttl > div, .L2 .ttl > div, .L3 .ttl > div { position: absolute; margin: 0; white-space: nowrap; }
+  .L1 .k1, .L2 .k1, .L3 .k1 { font-size: calc(var(--fs, 84px) * .6); }
+
+  /* L1: 위 왼쪽 "피는 마셔도" / 아래 왼쪽 큰 두 줄 */
+  .L1 .k1 { left: 40px; top: 94px; text-align: left; }
+  .L1 .who { top: 404px; }
+  .L1 .small { left: 44px; top: 586px; text-align: left; }
+  .L1 .k2 { left: 38px; top: 632px; text-align: left; }
+  .L1 .k3 { left: 38px; top: calc(632px + var(--fs, 84px) * 1.06); text-align: left; }
+
+  /* L2: 오른쪽 세로 "피는 마셔도" / 아래 가운데 큰 두 줄 */
+  .L2 .vname { display: none; }
+  .L2 .k1 { right: 30px; top: 100px; writing-mode: vertical-rl; letter-spacing: .06em; }
+  .L2 .who { top: 430px; }
+  .L2 .small { left: 0; right: 0; top: 596px; text-align: center; }
+  .L2 .k2 { left: 0; right: 0; top: 640px; text-align: center; }
+  .L2 .k3 { left: 0; right: 0; top: calc(640px + var(--fs, 84px) * 1.06); text-align: center; }
+
+  /* L3: 지그재그 — 왼쪽 / 오른쪽 / 왼쪽 */
+  .L3 .who { top: 400px; }
+  .L3 .k1 { left: 40px; top: 548px; text-align: left; }
+  .L3 .k2 { right: 40px; top: 616px; text-align: right; }
+  .L3 .k3 { left: 40px; top: calc(616px + var(--fs, 84px) * 1.1); text-align: left; }
+  .L3 .small { right: 46px; top: calc(616px + var(--fs, 84px) * 2.25); text-align: right; }
+
+  /* L4: 오른쪽 세로 두 줄 (일본 포스터식) */
+  .L4 .vname { display: none; }
+  .L4 .ttl { position: static; }
+  .L4 .ttl > div { position: absolute; margin: 0; white-space: nowrap; writing-mode: vertical-rl; }
+  .L4 .k2 { right: 26px; top: 92px; font-size: var(--fs, 70px); line-height: 1; }
+  .L4 .k3 { right: 26px; top: calc(92px + var(--fs, 70px) * 5.15); font-size: var(--fs, 70px); line-height: 1; }
+  .L4 .k1 { right: calc(40px + var(--fs, 70px)); top: 96px; font-size: calc(var(--fs, 70px) * .56); line-height: 1; letter-spacing: .08em; }
+  .L4 .small { writing-mode: horizontal-tb !important; left: 42px; top: 718px; }
+  .L4 .who { top: 760px; }
+
+  /* L5: 사선으로 기울인 제목 */
+  .L5 .who { top: 410px; }
+  .L5 .ttl { top: 590px; left: -20px; right: -20px; transform: rotate(-7deg); transform-origin: 50% 50%; }
+  .L5 .k1 { text-align: left; padding-left: 88px; font-size: calc(var(--fs, 84px) * .62); }
+  .L5 .k2 { text-align: center; }
+  .L5 .k3 { text-align: right; padding-right: 92px; }
+  .L5 .small { text-align: right; padding-right: 90px; margin-top: 6px; }
+  .L5 .ttl { display: flex; flex-direction: column; }
+  .L5 .small { order: 9; }
+
+  /* L6: 네온 간판 틀 */
+  .L6 .who { top: 420px; }
+  .L6 .ttl { top: 640px; left: 38px; right: 38px; padding: 30px 0 22px; border: 2px solid #7d9bff; border-radius: 22px;
+    box-shadow: 0 0 12px #3d6bff, inset 0 0 14px rgba(61,107,255,.55); background: rgba(5,7,13,.5); }
+  .L6 .k1 { position: absolute; top: calc(var(--fs, 84px) * -.36); left: 26px; margin: 0; padding: 0 12px; font-size: calc(var(--fs, 84px) * .5);
+    background: #0a0c16; border-radius: 6px; }
+  .L6 .small { position: absolute; right: 22px; top: -52px; }
+  .L6 .k2, .L6 .k3 { font-size: calc(var(--fs, 84px) * .9); }
+
+  .foot { position: absolute; left: 40px; right: 40px; bottom: 30px; display: flex; justify-content: space-between; align-items: center;
+    font-family: "Noto Sans KR"; font-weight: 700; font-size: 10px; letter-spacing: .2em; }
+  .foot i { font-style: normal; color: #7d9bff; text-shadow: 0 0 6px #3d6bff; font-size: 8px; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="art"><img id="art" alt=""><div class="tone"></div></div>
+  <div class="shade"></div>
+  <div class="scan"></div>
+  <div class="grain"></div>
+  <div class="frame"></div>
+  <div class="dia" style="left:8px;top:8px"></div><div class="dia" style="right:8px;top:8px"></div>
+  <div class="dia" style="left:8px;bottom:8px"></div><div class="dia" style="right:8px;bottom:8px"></div>
+
+  <div class="strip"><div class="no neon-r" id="no">01</div><div class="ln"></div><div class="mid">SEVEN CHOICE +</div><div class="ln b"></div><div class="nv neon-b">NV</div></div>
+  <div class="vside">Ambered · Alter · Las Vegas · After 3 A.M.</div>
+  <div class="vname" id="vname">루안</div>
+
+  <div class="who">
+    <div class="script" id="script">Ruan</div>
+    <div class="row"><span class="en" id="en">RUAN MERCER</span><span class="code" id="code">CODE · ARC</span></div>
+  </div>
+
+  <div class="ttl">
+    <div class="small neon-b">Life Is Just A Night, I'm</div>
+    <div class="k k1">피는 마셔도</div>
+    <div class="k k2">뱀파이어는</div>
+    <div class="k k3">아닌데요</div>
+  </div>
+
+  <div class="foot neon-r"><span>NOT A VAMPIRE</span><i>◆</i><span>03:00</span><i>◆</i><span>LAS VEGAS</span><i>◆</i><span>BY THE HOUSE</span></div>
+</div>
+<script>
+  const CHARS = [
+    { th: "th01", en: "RUAN MERCER", ko: "루안", code: "ARC", f: [.56, .35], z: 1.0 },
+    { th: "th08", en: "JENIS MILLER", ko: "제니스", code: "CHEMIST", f: [.60, .31], z: 1.0 },
+    { th: "th03", en: "ANZI CROSS", ko: "안지", code: "INFORMER", f: [.47, .27], z: 1.0 },
+    { th: "th07", en: "MINOS HAZE", ko: "미노스", code: "TRACER", f: [.50, .22], z: 1.0 },
+    { th: "th04", en: "RAINER DE LAURENT", ko: "레이너", code: "MAESTRO", f: [.45, .18], z: 1.19 },
+    { th: "th02", en: "JIN WEBER", ko: "진", code: "DISPATCHER", f: [.55, .16], z: 1.36 },
+    { th: "th05", en: "MAQUIA AL-FARUQ", ko: "마키아", code: "SPHINX", f: [.45, .20], z: 1.36, dy: -95 },
+  ];
+  window.setChar = (i, mode) => new Promise(res => {
+    const c = CHARS[i];
+    document.getElementById("no").textContent = String(i + 1).padStart(2, "0");
+    document.getElementById("vname").textContent = c.ko;
+    const w = c.en.split(" ")[0];
+    document.getElementById("script").textContent = w[0] + w.slice(1).toLowerCase();
+    document.getElementById("en").textContent = c.en;
+    document.getElementById("code").textContent = "CODE · " + c.code;
+    document.getElementById("card").className = "card " + (mode || "");
+    const img = document.getElementById("art");
+    // 얼굴 중심 f를 카드의 (가운데, 위 30%)에 오게, 캐릭터별 z배 확대(얼굴 크기를 원본 미노스 th07에 맞춤). 빈틈 안 나게 범위 고정.
+    const Z = c.z || window.ZOOM || 1, W = 640 * Z, H = 936 * Z;
+    let x = 320 - c.f[0] * W, y = 936 * .30 - c.f[1] * H;
+    x = Math.min(0, Math.max(640 - W, x)); y = Math.min(0, Math.max(936 - H, y));
+    y = Math.max(936 - H, y + (c.dy || 0)); // dy: 글씨가 얼굴을 가리면 위로 올림
+    Object.assign(img.style, { width: W + "px", height: H + "px", left: x + "px", top: y + "px" });
+    const src = "file:///C:/Crack/NotVamp/.images/thumbnail/" + c.th + ".webp";
+    if (img.src === src && img.complete) return res();
+    img.onload = () => res();
+    img.src = src;
+  });
+</script>
+</body>
+</html>
