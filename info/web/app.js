@@ -230,7 +230,7 @@ const BASE_NOTICES = [
   ["", "보안", "인간에게 정체가 드러날 위험이 생기면 즉시 디스패치로 연락하십시오."],
 ];
 const NOTICE_POOL = [
-  ["", "공지", "더 코르부스 VIP 살롱층, 금주 야간 출입 제한."],
+  ["", "공지", "더 레이븐 VIP 객실층, 금주 야간 출입 제한."],
   ["red", "경고", "프리몬트 일대 사냥꾼 흔적 재확인. 단독 이동 금지 구역 확대."],
   ["", "공지", "벨 에포크 지하 창고 점검 — 관계자 외 출입 금지."],
   ["gold", "급여", "이번 달 임무 보상 정산이 완료되었습니다. 내역은 디바이스에서 확인."],
@@ -238,8 +238,8 @@ const NOTICE_POOL = [
   ["red", "경고", "다운타운 북쪽 폭주 개체, 회수 전까지 해당 구역 접근 금지."],
   ["", "보안", "크로니클 제보망에 하우스 물류 트럭 관련 글 확인. 노출 위험 '주의' 단계."],
   ["", "공지", "디바이스 펌웨어 업데이트 예정. 03:00~03:05 일시 접속 불가."],
-  ["", "근무", "더 코르부스 카지노 플로어 야간 교대 03:00. 위장 근무자는 교대 전 갈증도 확인."],
-  ["", "시설", "직원동 B 엘리베이터 점검 — 지하 관제실 층은 화물용으로 이동."],
+  ["", "근무", "더 세이렌 카지노 플로어 야간 교대 03:00. 위장 근무자는 교대 전 갈증도 확인."],
+  ["", "시설", "본사 B 엘리베이터 점검 — 지하 관제실 층은 화물용으로 이동."],
 ];
 function addNotice(n) { ST.notices.unshift(n); ST.notices = ST.notices.slice(0, 4); save(); renderNotices(); }
 function renderNotices() {
@@ -278,7 +278,7 @@ function renderMe() {
   feed.disabled = ST.th < 50; feed.textContent = ST.th < 50 ? "급식 대기 (갈증도 50부터)" : "기본 급식분 섭취";
   pack.disabled = !ST.pack; pack.textContent = `혈액팩 사용 · ${ST.pack}개`;
   $("#workState").textContent = ST.work === today() ? "출근 완료 · 벨 에포크" : "미출근";
-  const home = ["더 코르부스 직원동 방 (F~E) · 승급 전까지 고정"]; if (ST.perm.curt) home.push("암막 커튼 시공됨"); if (ST.perm.pane) home.push("방음 패널 시공됨");
+  const home = ["더 레이븐 직원동 방 (F~E) · 승급 전까지 고정"]; if (ST.perm.curt) home.push("암막 커튼 시공됨"); if (ST.perm.pane) home.push("방음 패널 시공됨");
   $("#homeLine").textContent = home.join(" · ");
   const on = Object.keys(FX).filter(hasFx);
   $("#fxList").innerHTML = on.length ? `<div class="fx-h">적용 중인 효과</div>` + on.map(id => `<div class="fx"><b>${FX[id].name}</b><span>${FX[id].fx}</span><em>${FX[id].perm ? "보유" : `남은 ${fxLeft(id)}분`}</em></div>`).join("") : "";
@@ -337,22 +337,22 @@ function tick() {
 const CH = {
   ruan:   { ko: "루안", code: "ARC", gr: "S", ac: "#3fd6e8", st: "OFFLINE", sc: "#6b7287", loc: "위치 신호 없음 · 프리랜서", th: 18, memo: "응답 지연 · 평균 6시간. 급할 땐 디스패치 경유." },
   jenis:  { ko: "제니스", code: "CHEMIST", gr: "B", ac: "#7d9bff", st: "출장중", sc: "#e0a14a", loc: "뉴욕 · 제휴 제약사 이사회", th: 22, memo: "혈액 공급 라인 정상. 회신은 업무 시간 외." },
-  rainer: { ko: "레이너", code: "MAESTRO", gr: "A", ac: "#d0344f", st: "근무중", loc: "카페 벨 에포크 · 다운타운", th: 11, memo: "신입 위장 근무 담당. 지하 창고 출입 제한." },
+  rainer: { ko: "레이너", code: "MAESTRO", gr: "A", ac: "#d0344f", st: "근무중", loc: "카페 벨 에포크 · 더 레이븐 1층", th: 11, memo: "신입 위장 근무 담당. 지하 창고 출입 제한." },
   anzi:   { ko: "안지", code: "INFORMER", gr: "A", ac: "#f2c14e", st: "ONLINE", loc: "크로니클 편집국", th: 9, memo: "최선임. 디바이스 응답은 기분 따라." },
   minos:  { ko: "미노스", code: "TRACER", gr: "B", ac: "#d9853b", st: "근무중", loc: "LVMPD 다운타운 지구", th: 41, memo: "갈증 주기 짧음 · 하우스 의무 기록 대상." },
-  jin:    { ko: "진", code: "DISPATCHER", gr: "C", ac: "#c8d2e8", st: "방해 금지", sc: "#ff3d52", loc: "더 코르부스 지하 · 디스패치실", th: 15, memo: "신입 온보딩 담당. 업무 문의는 메시지로." },
+  jin:    { ko: "진", code: "DISPATCHER", gr: "C", ac: "#c8d2e8", st: "방해 금지", sc: "#ff3d52", loc: "코르부스 본사 지하 · 디스패치실", th: 15, memo: "신입 온보딩 담당. 업무 문의는 메시지로." },
   maquia: { ko: "마키아", code: "SPHINX", gr: "A", ac: "#3ddc97", st: "비공개", sc: "#6b7287", loc: "조회 권한 없음 (F)", th: null, memo: "이 개체의 위치·상태는 열람할 수 없습니다." },
 };
 const DEV_POOL = {
   ruan:   [["OFFLINE", "#6b7287", "위치 신호 없음 · 프리랜서"], ["ONLINE", "#5be38c", "스트립 외곽 · 이동 중"], ["임무중", "#ff3d52", "위치 비공개 · 단독 임무"]],
   jenis:  [["출장중", "#e0a14a", "뉴욕 · 제휴 제약사 이사회"], ["ONLINE", "#5be38c", "라스베이거스 · 위치 비공개"], ["회의중", "#e0a14a", "시카고 · 이사회 분기 회의"]],
-  rainer: [["근무중", "#5be38c", "카페 벨 에포크 · 다운타운"], ["휴식", "#e0a14a", "벨 에포크 2층"], ["방해 금지", "#ff3d52", "위치 비공개"]],
+  rainer: [["근무중", "#5be38c", "카페 벨 에포크 · 더 레이븐 1층"], ["휴식", "#e0a14a", "벨 에포크 2층"], ["방해 금지", "#ff3d52", "위치 비공개"]],
   anzi:   [["ONLINE", "#5be38c", "크로니클 편집국"], ["취재중", "#e0a14a", "프리몬트 스트리트"], ["OFFLINE", "#6b7287", "응답 없음"]],
   minos:  [["근무중", "#5be38c", "LVMPD 다운타운 지구"], ["현장 출동", "#ff3d52", "다운타운 북쪽 · 사건 현장"], ["비번", "#e0a14a", "위치 비공개"]],
-  jin:    [["방해 금지", "#ff3d52", "더 코르부스 지하 · 디스패치실"], ["근무중", "#5be38c", "더 코르부스 지하 · 디스패치실"], ["회의중", "#e0a14a", "더 코르부스 · 임원층"]],
+  jin:    [["방해 금지", "#ff3d52", "코르부스 본사 지하 · 디스패치실"], ["근무중", "#5be38c", "코르부스 본사 지하 · 디스패치실"], ["회의중", "#e0a14a", "코르부스 본사 · 임원층"]],
 };
-// 본거지가 더 코르부스 지하로 바뀌기 전에 저장된 위치 문구는 새 이름으로 바꿔 둔다
-Object.values(ST.dev).forEach(d => { if (d && d.loc) d.loc = d.loc.replace("하우스 행정동", "더 코르부스 지하").replace("하우스 본관 · 상층부", "더 코르부스 · 임원층"); });
+// 예전에 저장된 위치 문구는 지금 장소 이름으로 바꿔 둔다 (본사 지하·임원층, 벨 에포크=더 레이븐 1층)
+Object.values(ST.dev).forEach(d => { if (d && d.loc) d.loc = d.loc.replace(/하우스 행정동|더 코르부스 지하/, "코르부스 본사 지하").replace(/하우스 본관 · 상층부|더 코르부스 · 임원층/, "코르부스 본사 · 임원층").replace("카페 벨 에포크 · 다운타운", "카페 벨 에포크 · 더 레이븐 1층"); });
 Object.entries(ST.dev).forEach(([id, d]) => Object.assign(CH[id], d));
 function renderDevices() {
   const cards = Object.entries(CH).map(([id, c]) => `
@@ -412,10 +412,10 @@ function shiftDevice() {
 // F등급이 받을 수 있는 임무 (보상은 기존 범위: 일반 100~500, 물류 50~150)
 const MISSION_POOL = [
   { t: "물류 · 냉장 컨테이너 이송 보조", place: "스트립 외곽 · 'C-7'", risk: "l", with: "ruan", pay: [60, 120], dur: 40 },
-  { t: "물류 · 혈액팩 분배 지원", place: "더 코르부스 지하 · 의료실", risk: "l", with: "", pay: [50, 100], dur: 30 },
+  { t: "물류 · 혈액팩 분배 지원", place: "코르부스 본사 지하 · 의료실", risk: "l", with: "", pay: [50, 100], dur: 30 },
   { t: "현장 정리 · 노출 흔적 제거", place: "프리몬트 뒷골목", risk: "m", with: "minos", pay: [150, 250], dur: 60 },
   { t: "감시 · 크로니클 제보자 확인", place: "다운타운 · 24시 코인세탁소", risk: "l", with: "anzi", pay: [100, 180], dur: 45 },
-  { t: "호위 · VIP 귀가 동행", place: "더 코르부스 · VIP 살롱", risk: "m", with: "ruan", pay: [200, 320], dur: 70 },
+  { t: "호위 · VIP 귀가 동행", place: "더 세이렌 · VIP 살롱", risk: "m", with: "ruan", pay: [200, 320], dur: 70 },
   { t: "회수 · 분실 디바이스 수거", place: "스트립 남쪽 모텔", risk: "l", with: "", pay: [100, 140], dur: 35 },
   { t: "정찰 · 사냥꾼 은신처 의심 지점", place: "사막 외곽 창고", risk: "m", with: "", pay: [220, 380], dur: 80 },
   { t: "벨 에포크 · 지하 창고 재고 정리", place: "벨 에포크", risk: "l", with: "rainer", pay: [100, 130], dur: 30 },
@@ -620,7 +620,7 @@ const BOARD = [
 const NOISE = [
   { who: "📰 제보", h: "♥ 112", t: "프리몬트 뒷골목 총성 4발", p: "신고 받고 갔더니 현장이 깨끗했다고. 탄피도 핏자국도 없음. 형사 한 명만 남아 있었다는 목격담.",
     cm: [["익명", "LVMPD는 오발 사고로 처리 중"], ["익명", "그 형사 맨날 야간 혼자 다니는 사람 아님?"]], risk: ["주의", "risk-m", "목격자 1명 · 경찰 기록 존재"] },
-  { who: "📰 제보", h: "♥ 58", t: "다운타운 카페에 새 알바생", p: "벨 에포크 사장님 카페. 얼굴 창백하고 손님 목만 본다는 후기 있음 ㅋㅋ",
+  { who: "📰 제보", h: "♥ 58", t: "레이븐 호텔 옆 카페에 새 알바생", p: "벨 에포크 사장님 카페. 얼굴 창백하고 손님 목만 본다는 후기 있음 ㅋㅋ",
     cm: [["익명", "거기 사장님이 더 무서움 웃는데 눈이 안 웃어"]], risk: ["낮음", "risk-l", "농담 수준 · 확산 없음"] },
   { who: "📰 제보", h: "♥ 204", t: "스트립 외곽 냉장 트럭이 매일 새벽 같은 시간에", p: "코르부스 로고 붙은 트럭. 새벽 4시 반에 들어갔다 해 뜨기 전에 나감. 뭐 싣는 걸까.",
     cm: [["익명", "그냥 호텔 식자재겠지"], ["익명", "식자재를 왜 해 뜨기 전에만 옮겨"]], risk: ["위험", "risk-h", "반복 관찰 · 사진 첨부 시도 있음"] },
@@ -969,7 +969,7 @@ const SHORT_RE = /^(ㅇㅇ|ㅇ|응|웅|ㅋ+|ㅎ+|ㄴㄴ|ㄱㄱ|넵|네|어|음+|
 // [조건, 답] — 조건이 null이면 아무 말에나 (단, 의도가 뚜렷한 말이면 건너뜀). 대화당 두 번까지, 같은 답은 한 번만
 const FOLLOW = {
   jin: { shift: [
-    [/어디|위치|주소|가는\s?길/, ["다운타운입니다. 디바이스 지도에 찍어 두겠습니다."]],
+    [/어디|위치|주소|가는\s?길/, ["더 레이븐 1층 옆입니다. 디바이스 지도에 찍어 두겠습니다."]],
     [/싫|안\s?가|귀찮|가기\s?싫|빠지/, ["출근 기록은 대시보드에 남습니다.", "안 남으면 제가 확인 연락 드립니다."]],
     [/위장|왜\s?(일|근무|출근)|꼭/, ["인간 사이에 섞여 사는 것도 규정입니다.", "§4. 하우스 규정 탭에 있습니다."]],
     [null, ["네. 오늘은 여기까지입니다.", "궁금한 건 하우스 규정 탭부터 보세요. 거기 없으면 그때 물으시고요."]] ] },
@@ -1532,34 +1532,34 @@ const stat = a => `<div class="cp-stats">${a.map(([n, l]) => `<div><b>${n}</b><s
 const sec = (h, p) => `<div class="cp-sec"><h4>${h}</h4><p>${p}</p></div>`;
 const PAGES = {
   about: ["ABOUT CORVUS", "We keep the night running.",
-    `<p class="cp-lead">코르부스 그룹은 라스베이거스 스트립의 카지노 리조트 <b>더 코르부스(The Corvus)</b>를 중심으로 호텔·카지노·다이닝을 운영하는 호스피탈리티 그룹입니다. 해가 진 뒤에도 멈추지 않는 도시에서, 전 세계 12개 도시의 밤을 맡고 있습니다.</p>` +
+    `<p class="cp-lead">코르부스 그룹은 라스베이거스 스트립의 호텔 <b>더 레이븐(The Raven)</b>과 카지노 <b>더 세이렌(The Siren)</b>을 운영하는 호스피탈리티 그룹입니다. 해가 진 뒤에도 멈추지 않는 도시에서, 전 세계 12개 도시의 밤을 맡고 있습니다.</p>` +
     stat([["1906", "라스베이거스 창립"], ["12", "운영 도시"], ["24/7", "무휴 운영"], ["47년", "임원 평균 근속"]]) +
-    sec("우리의 시작", "1906년, 라스베이거스 철도 부지 옆의 작은 야간 카드룸에서 시작했습니다. 낮에는 문을 닫고 해가 지면 열던 그 방이, 지금 스트립 한가운데 선 더 코르부스가 되었습니다.") +
-    sec("본사", "그룹 본사와 운영 본부는 더 코르부스 안에 있습니다. 경영진은 리조트에 상주하며, 손님이 가장 많은 시간에 가장 가까이 있습니다.") +
+    sec("우리의 시작", "1906년, 라스베이거스 철도 부지 옆의 작은 야간 카드룸에서 시작했습니다. 낮에는 문을 닫고 해가 지면 열던 그 방이, 지금의 더 세이렌과 더 레이븐이 되었습니다.") +
+    sec("본사", "코르부스 본사는 스트립에서 몇 블록 떨어진 오피스 빌딩입니다. 그룹 경영진과 운영 본부, 그룹 의료팀이 이곳에 있습니다. <small>본사는 방문객을 받지 않습니다.</small>") +
     sec("우리의 원칙", "· <b>신뢰</b> — 손님의 비밀은 회사의 비밀입니다.<br>· <b>지속</b> — 오래 갑니다. 아주 오래.<br>· <b>질서</b> — 모든 직원은 정해진 규정 안에서 보호받습니다.") +
     sec("경영진", "코르부스의 경영진은 언론 노출을 최소화합니다. 이사회 명단은 주주에게만 공개되며, 창립자에 관한 문의는 받지 않습니다.")],
   hotels: ["HOTELS & RESORTS", "호텔 · 리조트",
-    `<p class="cp-lead">스트립 한가운데의 플래그십 더 코르부스부터 세계 12개 도시의 리조트까지. 코르부스의 객실은 손님이 잠들지 않는 시간에 가장 빛납니다.</p>` +
-    stat([["3,200+", "객실"], ["41층", "더 코르부스 타워"], ["98%", "야간 객실 점유율"]]) +
-    sec("더 코르부스 (The Corvus)", "그룹의 플래그십 카지노 리조트. 41층 타워에 객실과 스위트, 최상층 펜트하우스를 갖췄습니다. 모든 객실에 완전 암막 커튼을 기본으로 제공하며, 체크아웃은 일몰 이후까지 연장할 수 있습니다.") +
+    `<p class="cp-lead">스트립의 호텔 더 레이븐부터 세계 12개 도시의 리조트까지. 코르부스의 객실은 손님이 잠들지 않는 시간에 가장 빛납니다.</p>` +
+    stat([["3,200+", "객실"], ["41층", "더 레이븐 타워"], ["98%", "야간 객실 점유율"]]) +
+    sec("더 레이븐 (The Raven)", "그룹이 운영하는 스트립의 호텔. 41층 타워에 객실과 스위트, 최상층 펜트하우스를 갖췄습니다. 모든 객실에 완전 암막 커튼을 기본으로 제공하며, 체크아웃은 일몰 이후까지 연장할 수 있습니다.") +
     sec("스위트 · 펜트하우스", "고층 스위트와 펜트하우스는 장기 투숙 고객과 초대받은 손님에게만 엽니다. <small>펜트하우스 층은 전용 엘리베이터로만 올라갈 수 있습니다.</small>") +
-    sec("임직원 레지던스", "코르부스 임직원은 그룹 호텔 안에서 지냅니다. 직원동 방부터 호텔 객실, 스위트, 펜트하우스까지 직급에 따라 배정되며, 입주는 회사 배정으로만 가능합니다. <small>입사 전 살던 집의 정리는 회사가 대신 처리해 드립니다.</small>")],
+    sec("임직원 레지던스", "코르부스 임직원은 그룹 호텔 더 레이븐 안에서 지냅니다. 직원동 방부터 호텔 객실, 스위트, 펜트하우스까지 직급에 따라 배정되며, 입주는 회사 배정으로만 가능합니다. <small>입사 전 살던 집의 정리는 회사가 대신 처리해 드립니다.</small>")],
   casino: ["CASINO", "카지노 · 게이밍",
-    `<p class="cp-lead">시계도 창문도 없는 플로어. 더 코르부스 카지노에서는 밤이 끝나는 시각을 손님이 정합니다.</p>` +
+    `<p class="cp-lead">시계도 창문도 없는 플로어. 스트립의 카지노 더 세이렌에서는 밤이 끝나는 시각을 손님이 정합니다.</p>` +
     stat([["1,400+", "슬롯 · 게이밍 머신"], ["120", "테이블 게임"], ["24/7", "플로어 운영"]]) +
-    sec("메인 플로어", "블랙잭, 바카라, 룰렛, 크랩스부터 하이 리밋 슬롯까지. 붉은 벨벳과 황동 장식 아래에서 딜러들이 밤새 테이블을 지킵니다.") +
+    sec("더 세이렌 (The Siren)", "그룹이 운영하는 스트립의 카지노. 블랙잭, 바카라, 룰렛, 크랩스부터 하이 리밋 슬롯까지. 붉은 벨벳과 황동 장식 아래에서 딜러들이 밤새 테이블을 지킵니다.") +
     sec("프라이빗 살롱", "최상층 VIP 살롱은 초대받은 고객만 이용할 수 있습니다. 살롱 직원은 손님의 얼굴과 취향을 아주 오래 기억합니다.") +
     sec("책임 있는 게이밍", "카지노 이용은 만 21세 이상만 가능하며, 플로어 직원이 신분 확인을 요청할 수 있습니다. 게임은 즐거울 때까지만. <small>코르부스 카드 회원의 출입 기록은 영구 보관됩니다.</small>")],
   dining: ["DINING & CAFÉ", "다이닝 · 바 · 카페",
     `<p class="cp-lead">자정이 지나야 붐비는 레스토랑, 해 뜨기 직전까지 여는 바. 코르부스의 다이닝은 늦은 시간을 위해 만들었습니다.</p>` +
     stat([["14", "레스토랑 · 바"], ["04:30", "라스트 오더"], ["24시간", "룸서비스"]]) +
-    sec("르 코르보 (Le Corbeau)", "더 코르부스 최상층의 프렌치 다이닝. 굽기는 레어보다 더 붉게도 주문하실 수 있습니다. 미리 말씀해 주세요.") +
-    sec("카페 벨 에포크 (Belle Époque)", "그룹 산하의 빈티지 카페. 붉은 벽돌 아치와 재즈, 창가의 그랜드피아노. 운영은 카페 대표가 독자적으로 맡고 있습니다. <small>지하층은 일반 손님에게 개방하지 않습니다.</small>") +
+    sec("르 코르보 (Le Corbeau)", "더 레이븐 최상층의 프렌치 다이닝. 굽기는 레어보다 더 붉게도 주문하실 수 있습니다. 미리 말씀해 주세요.") +
+    sec("카페 벨 에포크 (Belle Époque)", "더 레이븐 1층에 붙어 있는 그룹 산하의 빈티지 카페. 붉은 벽돌 아치와 재즈, 창가의 그랜드피아노. 운영은 카페 대표가 독자적으로 맡고 있습니다. <small>지하층은 일반 손님에게 개방하지 않습니다.</small>") +
     sec("룸서비스", "메뉴에 없는 것도 주문하실 수 있습니다. 해가 뜨기 전에 드셔 주세요.")],
   medical: ["MEDICAL", "메디컬 센터",
-    `<p class="cp-lead">더 코르부스 메디컬 센터는 투숙객과 임직원을 위한 리조트 안 의료팀입니다. 응급 대응과 헌혈 캠페인을 24시간 운영합니다.</p>` +
+    `<p class="cp-lead">코르부스 메디컬은 더 레이븐·더 세이렌의 손님과 임직원을 맡는 그룹 의료팀입니다. 응급 대응과 헌혈 캠페인을 24시간 운영합니다.</p>` +
     stat([["24/7", "응급 대응"], ["−4°C", "혈액 냉장 보관"], ["0건", "공급 중단 사고"]]) +
-    sec("리조트 의료팀", "그룹 메디컬 디렉터가 이끄는 의료진이 리조트 안에 상주합니다. 의료실은 손님 동선과 분리된 지하층에 있습니다.") +
+    sec("그룹 의료팀", "그룹 메디컬 디렉터가 이끄는 의료진이 두 사업장의 응급 상황에 대응합니다. 의료실은 본사 지하층에 있습니다.") +
     sec("혈액 보관", "헌혈·제휴 의료기관 협력망으로 확보한 혈액을 응급 수혈용으로 정제·분류해 냉장 보관합니다. 모든 팩에 고유 추적번호가 붙습니다.") +
     sec("유의 사항", "코르부스는 일반 소비자에게 혈액 제품을 판매하지 않습니다. 개인 간 혈액 거래는 불법이며, 회사와 무관합니다.")],
   supply: ["SUPPLY", "운영 지원 · 야간 물류",
@@ -1581,7 +1581,7 @@ const PAGES = {
     sec("제3자 제공", "법령에 따른 경우를 제외하고, 귀하의 정보는 '내부'에서만 공유됩니다.")],
   investors: ["INVESTORS", "투자자 정보",
     stat([["+31%", "2026 야간 매출 성장"], ["0", "적자 분기"], ["120년", "무배당 중단 기록"]]) +
-    sec("주주총회", "정기 주주총회는 매년 동지(冬至) 자정, 더 코르부스 최상층에서 열립니다. 의결권은 대리 행사할 수 없습니다.") +
+    sec("주주총회", "정기 주주총회는 매년 동지(冬至) 자정, 코르부스 본사 최상층에서 열립니다. 의결권은 대리 행사할 수 없습니다.") +
     sec("공시", "분기 실적은 직원 포털과 주주 전용 채널로만 공시합니다.")],
 };
 // 하위 페이지 머리 사진 — 없으면 회사 로고 패턴으로 대신
@@ -1595,34 +1595,34 @@ const CORP_ORDER = ["about", "hotels", "casino", "dining", "medical", "supply", 
 const PAGES_L = { ko: PAGES };
 PAGES_L.en = {
   about: ["ABOUT CORVUS", "We keep the night running.",
-    `<p class="cp-lead">Corvus Group is a hospitality group built around <b>The Corvus</b>, our casino resort on the Las Vegas Strip, operating hotels, casinos and dining. In a city that never stops after dark, we keep the night running in twelve cities worldwide.</p>` +
+    `<p class="cp-lead">Corvus Group is a hospitality group operating <b>The Raven</b> hotel and <b>The Siren</b> casino on the Las Vegas Strip. In a city that never stops after dark, we keep the night running in twelve cities worldwide.</p>` +
     stat([["1906", "Founded in Las Vegas"], ["12", "Cities"], ["24/7", "Operations"], ["47 yrs", "Avg. executive tenure"]]) +
-    sec("Our Beginning", "In 1906 we started as a small night card room beside the Las Vegas rail yard. Closed by day, open at sunset — that room became The Corvus, standing in the middle of the Strip.") +
-    sec("Headquarters", "Group headquarters and operations are housed inside The Corvus. Our executives live on site, closest to our guests at the busiest hours.") +
+    sec("Our Beginning", "In 1906 we started as a small night card room beside the Las Vegas rail yard. Closed by day, open at sunset — that room grew into The Siren and The Raven.") +
+    sec("Headquarters", "Corvus headquarters is an office building a few blocks off the Strip, home to group leadership, operations and the group medical team. <small>Headquarters does not receive visitors.</small>") +
     sec("Our Principles", "· <b>Trust</b> — a guest's secret is the company's secret.<br>· <b>Endurance</b> — we last. For a very long time.<br>· <b>Order</b> — every employee is protected within the rules.") +
     sec("Leadership", "Our leadership keeps a minimal public profile. The board roster is disclosed to shareholders only, and we do not answer inquiries about our founder.")],
   hotels: ["HOTELS & RESORTS", "Hotels · Resorts",
-    `<p class="cp-lead">From our flagship The Corvus in the heart of the Strip to resorts in twelve cities, Corvus rooms shine brightest in the hours our guests stay awake.</p>` +
-    stat([["3,200+", "Rooms"], ["41 floors", "The Corvus Tower"], ["98%", "Night occupancy"]]) +
-    sec("The Corvus", "The group's flagship casino resort: a 41-floor tower of rooms and suites, crowned by the penthouse. Every room comes with full blackout curtains as standard, and checkout can be extended past sunset.") +
+    `<p class="cp-lead">From The Raven on the Strip to resorts in twelve cities, Corvus rooms shine brightest in the hours our guests stay awake.</p>` +
+    stat([["3,200+", "Rooms"], ["41 floors", "The Raven Tower"], ["98%", "Night occupancy"]]) +
+    sec("The Raven", "The group's hotel on the Strip: a 41-floor tower of rooms and suites, crowned by the penthouse. Every room comes with full blackout curtains as standard, and checkout can be extended past sunset.") +
     sec("Suites · Penthouse", "High-floor suites and the penthouse open only to long-stay and invited guests. <small>The penthouse floor is reachable only by private elevator.</small>") +
-    sec("Employee Residences", "Corvus employees live inside the group's hotels — from staff-wing rooms to hotel rooms, suites and the penthouse, assigned by grade. Residency is by company assignment only. <small>We take care of your previous home for you.</small>")],
+    sec("Employee Residences", "Corvus employees live inside the group's hotel, The Raven — from staff-wing rooms to hotel rooms, suites and the penthouse, assigned by grade. Residency is by company assignment only. <small>We take care of your previous home for you.</small>")],
   casino: ["CASINO", "Casino · Gaming",
-    `<p class="cp-lead">A floor with no clocks and no windows. At The Corvus, our guests decide when the night ends.</p>` +
+    `<p class="cp-lead">A floor with no clocks and no windows. At The Siren, our casino on the Strip, guests decide when the night ends.</p>` +
     stat([["1,400+", "Slots · gaming machines"], ["120", "Table games"], ["24/7", "Floor operations"]]) +
-    sec("Main Floor", "Blackjack, baccarat, roulette, craps and high-limit slots. Under red velvet and brass, our dealers keep the tables all night.") +
+    sec("The Siren", "The group's casino on the Strip. Blackjack, baccarat, roulette, craps and high-limit slots. Under red velvet and brass, our dealers keep the tables all night.") +
     sec("Private Salon", "The top-floor VIP salon is by invitation only. Salon staff remember a guest's face and tastes for a very long time.") +
     sec("Responsible Gaming", "You must be 21 or older to gamble, and floor staff may ask for ID. Play only while it's fun. <small>Entry records for Corvus Card members are kept permanently.</small>")],
   dining: ["DINING & CAFÉ", "Dining · Bars · Café",
     `<p class="cp-lead">Restaurants that fill up after midnight, bars open until just before sunrise. Corvus dining is made for the late hours.</p>` +
     stat([["14", "Restaurants · bars"], ["04:30", "Last order"], ["24 hrs", "Room service"]]) +
-    sec("Le Corbeau", "French dining on the top floor of The Corvus. Steaks can be ordered redder than rare — just let us know in advance.") +
-    sec("Café Belle Époque", "A vintage café within the group — red-brick arches, jazz, and a grand piano by the window. Run independently by the café's owner. <small>The basement level is not open to the public.</small>") +
+    sec("Le Corbeau", "French dining on the top floor of The Raven. Steaks can be ordered redder than rare — just let us know in advance.") +
+    sec("Café Belle Époque", "A vintage café attached to the ground floor of The Raven — red-brick arches, jazz, and a grand piano by the window. Run independently by the café's owner. <small>The basement level is not open to the public.</small>") +
     sec("Room Service", "You may order things that aren't on the menu. Please finish before sunrise.")],
   medical: ["MEDICAL", "Medical Center",
-    `<p class="cp-lead">The Corvus Medical Center is the resort's in-house medical team for guests and employees, running emergency care and blood drives around the clock.</p>` +
+    `<p class="cp-lead">Corvus Medical is the group medical team for guests and employees of The Raven and The Siren, running emergency care and blood drives around the clock.</p>` +
     stat([["24/7", "Emergency care"], ["−4°C", "Blood storage"], ["0", "Supply outages"]]) +
-    sec("Resort Medical Team", "A medical staff led by the group's medical director is on site at all times. The clinic is on a lower level, separate from guest areas.") +
+    sec("Group Medical Team", "A medical staff led by the group's medical director responds to emergencies at both venues. The clinic is on the lower level of headquarters.") +
     sec("Blood Storage", "Blood secured through donation and partner medical institutions is refined, sorted and refrigerated for emergency transfusion. Every unit carries a unique tracking number.") +
     sec("Please Note", "Corvus does not sell blood products to consumers. Private blood trading is illegal and has nothing to do with the company.")],
   supply: ["SUPPLY", "Operations Support · Night Logistics",
@@ -1640,7 +1640,7 @@ PAGES_L.en = {
     sec("How to Apply", "We do not hold open recruitment. Selection is by referral only — <b>when we need someone, we find them first.</b>")],
   investors: ["INVESTORS", "Investor Relations",
     stat([["+31%", "FY2026 night revenue growth"], ["0", "Loss-making quarters"], ["120 yrs", "Dividends never suspended"]]) +
-    sec("Annual Meeting", "The annual general meeting is held every year at midnight on the winter solstice, on the top floor of The Corvus. Voting rights cannot be exercised by proxy.") +
+    sec("Annual Meeting", "The annual general meeting is held every year at midnight on the winter solstice, on the top floor of Corvus headquarters. Voting rights cannot be exercised by proxy.") +
     sec("Disclosure", "Quarterly results are disclosed only through the employee portal and the shareholder channel.")],
   privacy: ["PRIVACY", "Privacy Policy",
     sec("Data We Collect", "Name, contact details, stay and gaming records, work records, biometric signals (company-device wearers only).") +
@@ -1656,26 +1656,26 @@ const NEWS_BODY = {
 <p>리포트에 따르면 라스베이거스 야간 소비의 <b>68%</b>가 새벽 1시에서 4시 사이에 발생했다. 같은 시간대 숙박·식음료 결제는 전년 대비 31% 늘었으며, 특히 <b>해가 뜨기 직전 30분</b> 동안 귀가 교통과 객실 체크인이 동시에 몰리는 '역(逆) 출근 시간대'가 처음으로 확인됐다.</p>
 <p>조사는 코르부스 계열 호텔·카지노·카페에서 수집한 결제·이동 데이터 1억 2천만 건을 바탕으로 했다. 설문 조사는 응답자의 편의를 위해 <b>일몰 이후에만</b> 진행됐다. 응답자 가운데 3%는 나이 기재를 거부했으며, 그룹은 이 응답도 그대로 분석에 포함했다.</p>
 <p>그룹 커뮤니케이션실장은 "밤은 더 이상 낮의 연장이 아니다. 밤에만 사는 사람들이 있고, 그들은 우리가 생각하는 것보다 훨씬 오래 이 도시를 지켜 왔다"며 "코르부스는 앞으로도 그들의 시간을 위해 문을 열어 두겠다"고 밝혔다.</p>
-<p>그룹은 리포트 결과를 바탕으로 내년 상반기 더 코르부스 타워에 <b>창문 없는 장기 투숙 객실</b> 120실을 추가로 열 계획이다. 리포트 전문은 주주와 임직원에게만 공개된다.</p>`,
+<p>그룹은 리포트 결과를 바탕으로 내년 상반기 더 레이븐 타워에 <b>창문 없는 장기 투숙 객실</b> 120실을 추가로 열 계획이다. 리포트 전문은 주주와 임직원에게만 공개된다.</p>`,
 `<p><b>카페 벨 에포크를 찾아 주시는 손님 여러분께.</b></p>
-<p>그룹 산하 카페 벨 에포크의 지하층이 리모델링을 위해 <b>별도 공지 시까지</b> 일반 손님께 개방되지 않습니다. 1층 카페와 2층 라운지는 평소처럼 오전 10시부터 영업합니다.</p>
+<p>더 레이븐 1층의 카페 벨 에포크 지하층이 리모델링을 위해 <b>별도 공지 시까지</b> 일반 손님께 개방되지 않습니다. 1층 카페와 2층 라운지는 평소처럼 오전 10시부터 영업합니다.</p>
 <p>공사 기간 중 지하에서 들리는 소리는 모두 공사 소음입니다. 공사는 손님이 적은 <b>새벽 3시부터 5시 사이</b>에만 진행되며, 그 시간대에는 지하 계단 쪽 문이 잠겨 있습니다. 문이 열려 있더라도 내려가지 마시기 바랍니다.</p>
 <p>지하 계단 근처에서 발견된 분실물은 카운터에서 보관하고 있습니다.<br>· 은 반지 1점 (안쪽에 각인 있음)<br>· 찢어진 형광 안전 조끼 1점<br>· 주인 없는 손목시계 1점 (아직 작동함)<br>본인 확인 후 돌려 드립니다.</p>
 <p>벨 에포크 대표는 "오래된 건물이라 지하에 손볼 곳이 많다. 손님들이 내려올 일은 없을 것"이라며 "그동안 위층에서 커피 향만 즐겨 주시면 된다"고 전했다.</p>
 <p>불편을 드려 죄송합니다. 위층의 커피는 그대로입니다.</p>`,
-`<p><b>[라스베이거스=코르부스 커뮤니케이션실]</b> 더 코르부스 메디컬 센터가 뉴욕 소재 제휴 제약사와 <b>정제 혈액의 장기 보존</b>에 관한 공동 연구에 착수했다.</p>
+`<p><b>[라스베이거스=코르부스 커뮤니케이션실]</b> 코르부스 메디컬이 뉴욕 소재 제휴 제약사와 <b>정제 혈액의 장기 보존</b>에 관한 공동 연구에 착수했다.</p>
 <p>현재 일반적인 적혈구 제제의 보관 기한은 냉장 기준 약 42일이다. 이번 연구는 이를 <b>수년 단위</b>로 늘리는 것을 목표로 한다. 연구진은 "시간이 지나도 굳지 않고, 처음 채혈한 날과 똑같은 상태를 유지하는 혈액"을 만드는 것이 최종 목표라고 설명했다.</p>
 <p>제휴사 측 연구 책임자는 "예측할 수 없는 변수가 가장 위험하다. 공급이 끊기는 순간을 원천적으로 없애고 싶다"며 "필요한 사람에게, 필요한 만큼, 언제든 닿는 혈액이 목표"라고 말했다.</p>
 <p>연구 결과의 활용 범위를 묻는 질문에 그룹은 "<b>수혈 외의 용도는 검토하지 않는다</b>"고 짧게 답했다. 연구 결과는 학술지에 게재하지 않으며, 그룹 내부와 제휴사 사이에서만 공유된다.</p>
-<p>연구는 더 코르부스 지하층의 메디컬 센터와 뉴욕의 제휴 연구소에서 동시에 진행된다. 두 곳 모두 <b>야간 근무 연구원</b>을 상시 모집 중이다.</p>`,
-`<p><b>[라스베이거스=코르부스 커뮤니케이션실]</b> 더 코르부스 카지노 메인 플로어가 6주간의 리뉴얼을 마치고 다시 문을 열었다.</p>
+<p>연구는 코르부스 본사의 의료 센터와 뉴욕의 제휴 연구소에서 동시에 진행된다. 두 곳 모두 <b>야간 근무 연구원</b>을 상시 모집 중이다.</p>`,
+`<p><b>[라스베이거스=코르부스 커뮤니케이션실]</b> 카지노 더 세이렌의 메인 플로어가 6주간의 리뉴얼을 마치고 다시 문을 열었다.</p>
 <p>새 플로어는 붉은 벨벳 테이블 120대와 하이 리밋 슬롯 구역을 갖췄다. 그룹은 리뉴얼 뒤에도 <b>플로어에 시계와 창문을 두지 않는 원칙</b>을 그대로 지켰다고 밝혔다. 조명은 일몰 직후의 밝기에 맞춰 밤새 바뀌지 않는다.</p>
 <p>최상층 VIP 살롱은 이번 공사에서 제외됐다. 살롱 측은 "단골손님들이 바뀌는 것을 싫어한다"고 설명했다. 살롱 딜러 가운데 세 명은 <b>1960년대 개장 당시부터</b> 같은 테이블을 맡고 있다.</p>
 <p>재개장 첫날 밤 플로어를 찾은 한 관광객은 "새벽 다섯 시가 넘은 줄 몰랐다. 딜러 손이 차가워서 놀랐는데, 에어컨 때문이라고 하더라"고 말했다.</p>
 <p>카지노 이용은 만 21세 이상만 가능하다. 그룹은 나이를 밝히기 어려운 손님에게도 <b>신분 확인은 예외 없이</b> 진행한다고 덧붙였다.</p>`,
 `<p><b>[라스베이거스=코르부스 커뮤니케이션실]</b> 코르부스 그룹이 라스베이거스 지역 헌혈 캠페인 「밤의 손길」을 후원한다.</p>
-<p>캠페인은 매주 금요일 <b>저녁 8시부터 새벽 4시까지</b> 더 코르부스 컨벤션 별관에서 열린다. 낮에는 시간을 내기 어려운 야간 근무자와 관광객을 위해 일몰 이후로 시간을 정했다고 그룹은 설명했다.</p>
-<p>참여자 전원에게는 더 코르부스 야간 라운지 이용권이 주어진다. 채혈은 그룹 메디컬 센터의 숙련 직원이 맡는다. 한 참여자는 "주사를 맞은 줄도 몰랐다. 끝나고 나니 이상하게 기분이 편안했다"고 말했다.</p>
+<p>캠페인은 매주 금요일 <b>저녁 8시부터 새벽 4시까지</b> 카지노 더 세이렌 별관에서 열린다. 낮에는 시간을 내기 어려운 야간 근무자와 관광객을 위해 일몰 이후로 시간을 정했다고 그룹은 설명했다.</p>
+<p>참여자 전원에게는 더 세이렌 야간 라운지 이용권이 주어진다. 채혈은 그룹 메디컬 센터의 숙련 직원이 맡는다. 한 참여자는 "주사를 맞은 줄도 몰랐다. 끝나고 나니 이상하게 기분이 편안했다"고 말했다.</p>
 <p>그룹은 혈액형이 드물거나 혈액 상태가 특히 좋은 일부 참여자에게 <b>추가로 연락을 드릴 수 있다</b>고 안내했다. 연락은 대부분 늦은 밤에 간다.</p>
 <p>그룹 관계자는 "피는 사람을 살린다. 그 사실을 누구보다 잘 알고 있다"며 "한 사람의 피가 얼마나 귀한지, 앞으로도 오래 기억하겠다"고 말했다.</p>`,
   ],
@@ -1684,26 +1684,26 @@ const NEWS_BODY = {
 <p>According to the report, <b>68%</b> of night-time spending in Las Vegas takes place between 1 and 4 a.m. Lodging and food &amp; beverage payments in those hours rose 31% year on year, and for the first time the report identifies a “reverse rush hour” in <b>the last 30 minutes before sunrise</b>, when traffic home and room check-ins peak together.</p>
 <p>The study draws on 120 million payment and movement records from Corvus hotels, casinos and cafés. For respondents' convenience, surveys were conducted <b>only after sunset</b>. Three percent of respondents declined to state their age; the group included their answers anyway.</p>
 <p>“The night is no longer an extension of the day,” said the group's head of communications. “There are people who live only at night, and they have watched over this city far longer than most of us imagine. Corvus will keep its doors open for their hours.”</p>
-<p>Based on the findings, the group plans to open 120 additional <b>windowless long-stay rooms</b> in The Corvus tower next year. The full report is available to shareholders and employees only.</p>`,
+<p>Based on the findings, the group plans to open 120 additional <b>windowless long-stay rooms</b> in The Raven tower next year. The full report is available to shareholders and employees only.</p>`,
 `<p><b>To our guests at Café Belle Époque.</b></p>
-<p>The basement level of Café Belle Époque, part of the group, will be closed to the public for renovation <b>until further notice</b>. The ground-floor café and second-floor lounge remain open from 10 a.m. as usual.</p>
+<p>The basement level of Café Belle Époque, on the ground floor of The Raven, will be closed to the public for renovation <b>until further notice</b>. The ground-floor café and second-floor lounge remain open from 10 a.m. as usual.</p>
 <p>Any sounds you may hear from below during this period are construction noise. Work is carried out only <b>between 3 and 5 a.m.</b>, when the café is quiet, and the door to the basement stairs is locked at those hours. If you find it open, please do not go down.</p>
 <p>Items found near the basement stairs are being kept at the counter:<br>· One silver ring (engraved on the inside)<br>· One torn high-visibility safety vest<br>· One unclaimed wristwatch (still running)<br>They will be returned upon proof of ownership.</p>
 <p>“It's an old building, and the basement needs a lot of work,” said the café's owner. “Our guests won't need to come down. Just enjoy the smell of coffee upstairs in the meantime.”</p>
 <p>We apologize for the inconvenience. The coffee upstairs is unchanged.</p>`,
-`<p><b>LAS VEGAS — Corvus Communications.</b> The Corvus Medical Center has begun joint research with a New York–based partner pharmaceutical company on the <b>long-term preservation of refined blood</b>.</p>
+`<p><b>LAS VEGAS — Corvus Communications.</b> Corvus Medical has begun joint research with a New York–based partner pharmaceutical company on the <b>long-term preservation of refined blood</b>.</p>
 <p>Refrigerated red blood cell products currently keep for about 42 days. The study aims to extend that to <b>years</b>. The ultimate goal, the researchers say, is “blood that never clots with time and stays exactly as it was on the day it was drawn.”</p>
 <p>“Unpredictable variables are the greatest risk,” said the partner company's lead researcher. “We want to eliminate the moment supply runs out altogether. Blood that reaches whoever needs it, as much as they need, whenever they need it.”</p>
 <p>Asked how the results might be used, the group answered briefly: “<b>We are not considering any use other than transfusion.</b>” The results will not be published in academic journals and will be shared only within the group and its partner.</p>
-<p>Research is under way at the medical center on The Corvus's lower level and at the partner lab in New York. Both are always recruiting <b>night-shift researchers</b>.</p>`,
-`<p><b>LAS VEGAS — Corvus Communications.</b> The main casino floor at The Corvus has reopened after a six-week renovation.</p>
+<p>Research is under way at the medical center at Corvus headquarters and at the partner lab in New York. Both are always recruiting <b>night-shift researchers</b>.</p>`,
+`<p><b>LAS VEGAS — Corvus Communications.</b> The main casino floor at The Siren has reopened after a six-week renovation.</p>
 <p>The new floor features 120 red-velvet tables and a high-limit slot area. The group says it has kept its rule of <b>no clocks and no windows on the floor</b>. The lighting is set to the brightness just after sunset and does not change all night.</p>
 <p>The top-floor VIP salon was left out of the work. “Our regulars don't like change,” the salon explained. Three of its dealers have kept the same tables <b>since the casino opened in the 1960s</b>.</p>
 <p>“I had no idea it was past 5 a.m.,” said a visitor on opening night. “The dealer's hands were cold, which surprised me — they said it was the air conditioning.”</p>
 <p>You must be 21 or older to gamble. The group adds that ID checks apply <b>without exception</b>, even to guests who find their age hard to state.</p>`,
 `<p><b>LAS VEGAS — Corvus Communications.</b> Corvus Group is sponsoring <i>Hands of the Night</i>, a Las Vegas community blood drive.</p>
-<p>The drive runs every Friday <b>from 8 p.m. to 4 a.m.</b> in the convention annex of The Corvus. The group says the hours were set after sunset for night-shift workers and visitors who find it hard to make time during the day.</p>
-<p>Every donor receives a pass to The Corvus night lounge. Blood is drawn by trained staff from the group's medical center. “I didn't even feel the needle,” one donor said. “Afterward I felt strangely calm.”</p>
+<p>The drive runs every Friday <b>from 8 p.m. to 4 a.m.</b> in the annex of The Siren casino. The group says the hours were set after sunset for night-shift workers and visitors who find it hard to make time during the day.</p>
+<p>Every donor receives a pass to The Siren's night lounge. Blood is drawn by trained staff from the group's medical center. “I didn't even feel the needle,” one donor said. “Afterward I felt strangely calm.”</p>
 <p>The group notes that donors with rare blood types or especially good samples <b>may be contacted again</b>. Most of these calls are made late at night.</p>
 <p>“Blood saves lives. We know that better than anyone,” a group spokesperson said. “We will remember, for a long time, how precious one person's blood can be.”</p>`,
   ],
@@ -1711,28 +1711,28 @@ const NEWS_BODY = {
 const NEWS_L = {
   ko: [
     ["보도자료", "코르부스 그룹, 2026 야간 경제 리포트 발간", "라스베이거스 야간 소비의 68%가 새벽 1시~4시에 발생한다는 분석. 그룹은 '밤은 더 이상 낮의 연장이 아니다'라고 밝혔다."],
-    ["공지", "벨 에포크 지하층 리모델링 안내", "그룹 산하 카페 벨 에포크 지하층이 당분간 일반 손님에게 개방되지 않습니다."],
-    ["보도자료", "메디컬 센터, 혈액 장기 보존 공동 연구 착수", "더 코르부스 메디컬 센터가 제휴 제약사와 정제 혈액의 보관 기한을 늘리는 연구에 나섰다. 결과는 대외 비공개."],
-    ["보도자료", "더 코르부스 카지노 플로어 재개장", "6주간의 리뉴얼을 마친 메인 플로어. 시계와 창문을 두지 않는 원칙은 그대로다."],
-    ["사회공헌", "라스베이거스 헌혈 캠페인 '밤의 손길' 후원", "헌혈자 전원에게 더 코르부스 야간 라운지 이용권 제공. 채혈은 일몰 이후에만 진행됩니다."]],
+    ["공지", "벨 에포크 지하층 리모델링 안내", "더 레이븐 1층 카페 벨 에포크 지하층이 당분간 일반 손님에게 개방되지 않습니다."],
+    ["보도자료", "코르부스 메디컬, 혈액 장기 보존 공동 연구 착수", "코르부스 메디컬이 제휴 제약사와 정제 혈액의 보관 기한을 늘리는 연구에 나섰다. 결과는 대외 비공개."],
+    ["보도자료", "더 세이렌 카지노 플로어 재개장", "6주간의 리뉴얼을 마친 메인 플로어. 시계와 창문을 두지 않는 원칙은 그대로다."],
+    ["사회공헌", "라스베이거스 헌혈 캠페인 '밤의 손길' 후원", "헌혈자 전원에게 더 세이렌 야간 라운지 이용권 제공. 채혈은 일몰 이후에만 진행됩니다."]],
   en: [
     ["Press Release", "Corvus Group Publishes 2026 Night Economy Report", "68% of night-time spending in Las Vegas happens between 1 and 4 a.m., the report finds. “The night is no longer an extension of the day,” the group said."],
     ["Notice", "Belle Époque Basement Renovation", "The basement level of Café Belle Époque will be closed to the public for the time being."],
-    ["Press Release", "Medical Center Begins Blood Preservation Research", "The Corvus Medical Center joins a partner pharmaceutical firm to extend the shelf life of refined blood. Results will not be disclosed."],
-    ["Press Release", "The Corvus Casino Floor Reopens", "The main floor returns after a six-week renovation — still with no clocks and no windows."],
-    ["Community", "Sponsoring the “Hands of the Night” Blood Drive", "Every donor receives a pass to The Corvus night lounge. Blood is drawn only after sunset."]],
+    ["Press Release", "Corvus Medical Begins Blood Preservation Research", "Corvus Medical joins a partner pharmaceutical firm to extend the shelf life of refined blood. Results will not be disclosed."],
+    ["Press Release", "The Siren Casino Floor Reopens", "The main floor returns after a six-week renovation — still with no clocks and no windows."],
+    ["Community", "Sponsoring the “Hands of the Night” Blood Drive", "Every donor receives a pass to The Siren's night lounge. Blood is drawn only after sunset."]],
 };
 
 const UI = {
   ko: { quick: ["인재채용", "투자자 정보", "개인정보처리방침"], menu: ["회사 소개", "호텔 · 리조트", "카지노", "다이닝", "메디컬 센터", "운영 지원", "인재채용", "뉴스룸", "투자자 정보"],
     none: "검색 결과가 없습니다.", noq: q => `'${q}'에 대한 검색 결과가 없습니다.`, dont: "……찾지 마십시오.", top: "↑ 맨 위로", more: "자세히 보기 →",
-    biz: [["호텔 · 리조트", "스트립 한가운데의 플래그십 더 코르부스. 객실 3,200실, 체크아웃은 일몰 이후까지."], ["카지노 · 게이밍", "시계도 창문도 없는 플로어. 밤이 끝나는 시각은 손님이 정합니다."], ["다이닝 · 바 · 카페", "자정이 지나야 붐비는 레스토랑과 바, 그리고 그룹 산하 카페 벨 에포크."]],
+    biz: [["호텔 · 리조트", "스트립의 호텔 더 레이븐. 객실 3,200실, 체크아웃은 일몰 이후까지."], ["카지노 · 게이밍", "스트립의 카지노 더 세이렌. 시계도 창문도 없는 플로어에서, 밤이 끝나는 시각은 손님이 정합니다."], ["다이닝 · 바 · 카페", "자정이 지나야 붐비는 레스토랑과 바, 그리고 더 레이븐 1층의 카페 벨 에포크."]],
     contact: "문의: 코르부스 그룹 커뮤니케이션실 (야간 응대)",
     f: { h: "지원서 제출", sub: "추천 없이도 지원은 받습니다. 검토는 저희가 알아서 합니다.", n: "이름", e: "이메일", fl: "희망 분야", m: "하고 싶은 말", np: "홍길동", mp: "밤에 강합니다. 피도 잘 봅니다.", btn: "지원서 보내기", note: "※ 메시지가 어디로 갈지는 알 수 없습니다.",
       opts: ["호텔 — 프런트 · 컨시어지 · 하우스키핑", "카지노 — 딜러 · 케이지", "다이닝 — 바리스타 · 바텐더", "보안 · 야간 서플라이", "행정 · 디스패치"], done: "지원서가 접수되었습니다.", body: n => `${n} 님, 지원해 주셔서 감사합니다.<br>결과는 따로 안내하지 않습니다. <em>필요하면, 저희가 먼저 찾아갑니다.</em>`, hint: "이미 밤을 아는 분이라면, 입구는 첫 화면에 있습니다." } },
   en: { quick: ["Careers", "Investors", "Privacy Policy"], menu: ["About", "Hotels", "Casino", "Dining", "Medical", "Supply", "Careers", "Newsroom", "Investors"],
     none: "No results found.", noq: q => `No results for “${q}”.`, dont: "……Stop looking.", top: "↑ Back to top", more: "Learn more →",
-    biz: [["Hotels · Resorts", "The Corvus, our flagship in the heart of the Strip. 3,200 rooms, checkout past sunset."], ["Casino · Gaming", "A floor with no clocks and no windows. Our guests decide when the night ends."], ["Dining · Bars · Café", "Restaurants and bars that fill up after midnight — and Café Belle Époque."]],
+    biz: [["Hotels · Resorts", "The Raven, our hotel on the Strip. 3,200 rooms, checkout past sunset."], ["Casino · Gaming", "The Siren, our casino on the Strip. No clocks, no windows — guests decide when the night ends."], ["Dining · Bars · Café", "Restaurants and bars that fill up after midnight — and Café Belle Époque at The Raven."]],
     contact: "Inquiries: Corvus Group Communications (night desk)",
     f: { h: "Submit an Application", sub: "We accept applications without referral. We'll review them our own way.", n: "Name", e: "Email", fl: "Position", m: "Message", np: "Jane Doe", mp: "I'm good at night. I don't mind blood.", btn: "Send Application", note: "※ We cannot tell you where your message will go.",
       opts: ["Hotel — front desk · concierge · housekeeping", "Casino — dealer · cage", "Dining — barista · bartender", "Security · night supply", "Administration · dispatch"], done: "Your application has been received.", body: n => `Thank you for applying, ${n}.<br>We do not announce results. <em>If we need you, we will find you first.</em>`, hint: "If you already know the night, the entrance is on the first page." } },
@@ -1827,8 +1827,8 @@ $("#kcNext").onclick = () => {
 };
 
 // 검색 — 회사 이야기는 찾아 주고, 찾으면 안 되는 단어는 조용히 지운다
-const SEARCH = [[/카지노|게임|게이밍|슬롯|블랙잭|바카라|룰렛|포커|딜러|살롱|casino|gaming|slot|blackjack|baccarat|roulette|poker|dealer/i, "casino"], [/호텔|객실|리조트|스위트|펜트|숙소|숙박|코르부스|hotel|resort|suite|penthouse|room|corvus/i, "hotels"], [/카페|벨|다이닝|레스토랑|식당|룸서비스|코르보|cafe|café|dining|restaurant|bar|corbeau/i, "dining"], [/혈액|피|헌혈|의료|병원|메디컬|제약|blood|medical|clinic|pharma/i, "medical"], [/물류|트럭|배송|노선|서플라이|logistic|truck|delivery|route|supply/i, "supply"],
-  [/채용|지원|입사|career|job|hiring|apply/i, "careers"], [/회사|소개|역사|about|history|company/i, "about"], [/투자|주주|\bir\b|investor|shareholder/i, "investors"], [/개인정보|privacy/i, "privacy"], [/뉴스|공지|news|notice|press/i, "news"]];
+const SEARCH = [[/카지노|세이렌|게임|게이밍|슬롯|블랙잭|바카라|룰렛|포커|딜러|살롱|casino|siren|gaming|slot|blackjack|baccarat|roulette|poker|dealer/i, "casino"], [/호텔|레이븐|객실|리조트|스위트|펜트|숙소|숙박|hotel|raven|resort|suite|penthouse|room/i, "hotels"], [/카페|벨|다이닝|레스토랑|식당|룸서비스|코르보|cafe|café|dining|restaurant|bar|corbeau/i, "dining"], [/혈액|피|헌혈|의료|병원|메디컬|제약|blood|medical|clinic|pharma/i, "medical"], [/물류|트럭|배송|노선|서플라이|logistic|truck|delivery|route|supply/i, "supply"],
+  [/채용|지원|입사|career|job|hiring|apply/i, "careers"], [/회사|소개|역사|본사|코르부스|about|history|company|headquarters|corvus/i, "about"], [/투자|주주|\bir\b|investor|shareholder/i, "investors"], [/개인정보|privacy/i, "privacy"], [/뉴스|공지|news|notice|press/i, "news"]];
 const FORBID = /알터|alter|뱀파이어|vampire|하우스|house|언더럭스|underlux|포식자|predator|오염체|흡혈/i;
 $("#kcSearch").onsubmit = e => {
   e.preventDefault();
@@ -1874,7 +1874,7 @@ const BOARD_POOL = [
 const NOISE_LOCAL = typeof NOISE !== "undefined" ? NOISE : [];
 // 노이즈 필터에 새로 들어오는 제보 (시간이 지나며 하나씩)
 const NOISE_POOL = [
-  { who: "📰 제보", h: "♥ 37", t: "새벽 3시 헌혈 버스, 줄 선 사람이 없는데 불이 켜져 있음", p: "더 코르부스 별관 앞. 문 닫혀 있는데 안에서 사람 그림자 셋. 아침엔 버스가 없어짐.",
+  { who: "📰 제보", h: "♥ 37", t: "새벽 3시 헌혈 버스, 줄 선 사람이 없는데 불이 켜져 있음", p: "더 세이렌 별관 앞. 문 닫혀 있는데 안에서 사람 그림자 셋. 아침엔 버스가 없어짐.",
     cm: [["익명", "그 캠페인 금요일만 한다며?"], ["익명", "오늘 화요일인데"]], risk: ["주의", "risk-m", "반복 목격 · 장소 특정됨"] },
   { who: "📰 제보", h: "♥ 89", t: "프리몬트 모텔 객실 창문이 전부 은박지", p: "2층 끝방 세 개가 창문을 은박지로 막아 둠. 낮에 노크해도 대답 없고 밤 11시에만 불 켜짐.",
     cm: [["익명", "마약 제조 아님?"], ["익명", "경찰 불렀는데 아무도 안 나왔대"]], risk: ["주의", "risk-m", "주민 신고 1건"] },
